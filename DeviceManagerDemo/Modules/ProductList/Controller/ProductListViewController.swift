@@ -58,14 +58,13 @@ extension ProductListViewController {
     
     private func setupTableView() {
         tableView.frame = view.bounds
-        tableView.rowHeight = UITableView.automaticDimension
-        tableView.estimatedRowHeight = 88
+        tableView.rowHeight = 120
         tableView.tableFooterView = UIView()
         
         tableView.dataSource = self
         tableView.delegate = self
         
-        tableView.register(UITableViewCell.self, forCellReuseIdentifier: "ProductCell")
+        tableView.register(ProductCell.self, forCellReuseIdentifier: ProductCell.reuseIdentifier)
         // 下拉刷新
         refreshControl.addTarget(self, action: #selector(refreshAction), for: .valueChanged)
         tableView.refreshControl = refreshControl
@@ -214,55 +213,38 @@ extension ProductListViewController{
     
     ///保存缓存
     private func saveCache() {
-        do{
-            
-            let data = try JSONEncoder().encode(productList)
-            UserDefaults.standard.set(data, forKey: cacheKey)
-        }catch{
-            print("缓存保存失败：\(error.localizedDescription)")
-        }
+        CacheHelper.save(productList, key: cacheKey)
     }
     ///加载缓存
     private func loadCache() {
-        
-        guard let data = UserDefaults.standard.data(forKey: cacheKey)else{
-            updateEmptyView()
-            return
-        }
-        do{
-            let cacheList = try JSONDecoder().decode([Product].self, from: data)
-         
+        guard let cacheList = CacheHelper.load(key: cacheKey, as: [Product].self) else {
+               updateEmptyView()
+               return
+           }
             productList = cacheList
             reloadListUI()
             print("读取缓存成功，缓存条数：\(cacheList.count)")
-        }catch{
-            print("缓存读取失败：\(error.localizedDescription)")
-            updateEmptyView()
-        }
         
     }
-    ///清楚缓存
+    ///清除缓存
     private func clearCache() {
         
-        UserDefaults.standard.removeObject(forKey: cacheKey)
+        CacheHelper.clear(key: cacheKey)
+        productList.removeAll()
+        reloadListUI()
         print("缓存已删除")
     }
     
-    @objc func clearCacheBtnAction() {
+    @objc private func clearCacheBtnAction() {
         clearCache()
     }
-    @objc func lookButtonTapped() {
-        guard let data = UserDefaults.standard.data(forKey: cacheKey)else{
-            print("无缓存")
-            return
-        }
-        do{
-            let cacheList = try JSONDecoder().decode([Product].self, from: data)
-         
+    
+    @objc private func lookButtonTapped() {
+        guard let cacheList = CacheHelper.load(key: cacheKey, as: [Product].self) else {
+                print("无缓存")
+               return
+           }
             print("读取缓存成功，缓存条数：\(cacheList.count)")
-        }catch{
-            print("缓存读取失败：\(error.localizedDescription)")
-        }
         
     }
 }
@@ -284,18 +266,15 @@ extension ProductListViewController: UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
 
-        let cell = tableView.dequeueReusableCell(withIdentifier: "ProductCell", for: indexPath)
+        let cell = tableView.dequeueReusableCell(
+            withIdentifier: ProductCell.reuseIdentifier,
+            for: indexPath
+        ) as! ProductCell
         
-        let model = productList[indexPath.row]
-        
-        var content = cell.defaultContentConfiguration()
-            content.text = model.title
-            
-            content.secondaryText = model.body
-            content.secondaryTextProperties.numberOfLines = 0
-            cell.contentConfiguration = content
-        
+        let product = productList[indexPath.row]
+        cell.configure(with: product)
         cell.accessoryType = .disclosureIndicator
+        
         return cell
     }
 }
