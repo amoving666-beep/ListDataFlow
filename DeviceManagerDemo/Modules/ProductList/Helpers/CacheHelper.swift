@@ -12,10 +12,10 @@ enum CacheHelper {
     //保存缓存
     
     static func save<T: Codable>(_ value: T, key: String) {
-        do{
+        do {
             let data = try JSONEncoder().encode(value)
             UserDefaults.standard.set(data, forKey: key)
-        }catch{
+        } catch {
             print("缓存保存失败：\(error.localizedDescription)")
         }
     }
@@ -24,14 +24,14 @@ enum CacheHelper {
         guard let data = UserDefaults.standard.data(forKey: key) else {
             return nil
         }
-        do{
+        do {
             return try JSONDecoder().decode(T.self, from: data)
-        }catch {
+        } catch {
             print("缓存读取失败：\(error.localizedDescription)")
             return nil
         }
     }
-        //清楚缓存
+    // 清除缓存
     static func clear(key: String) {
         UserDefaults.standard.removeObject(forKey: key)
 

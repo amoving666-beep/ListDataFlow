@@ -23,6 +23,7 @@
 		2B462D292F9111E200B19AFA /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2B462D152F9111E200B19AFA /* Assets.xcassets */; };
 		2B462D2B2F9111E200B19AFA /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2B462D1C2F9111E200B19AFA /* LaunchScreen.storyboard */; };
 		2B462D2C2F9111E200B19AFA /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2B462D1E2F9111E200B19AFA /* Main.storyboard */; };
+		2BC976452FA102C3000D94EE /* NetworkError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2BC976442FA102C3000D94EE /* NetworkError.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -44,6 +45,7 @@
 		2B462D1D2F9111E200B19AFA /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		2B462D1F2F9111E200B19AFA /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
 		2B462D202F9111E200B19AFA /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
+		2BC976442FA102C3000D94EE /* NetworkError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkError.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -108,6 +110,7 @@
 			isa = PBXGroup;
 			children = (
 				2B260D052F94F48B00F95950 /* ProductService.swift */,
+				2BC976442FA102C3000D94EE /* NetworkError.swift */,
 			);
 			path = Service;
 			sourceTree = "<group>";
@@ -236,6 +239,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				2B462D222F9111E200B19AFA /* AppDelegate.swift in Sources */,
+				2BC976452FA102C3000D94EE /* NetworkError.swift in Sources */,
 				2B260CFE2F94F14A00F95950 /* Product.swift in Sources */,
 				2B260D022F94F16E00F95950 /* ProductListViewController.swift in Sources */,
 				2B462D232F9111E200B19AFA /* DeviceCell.swift in Sources */,

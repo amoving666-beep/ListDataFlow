@@ -15,7 +15,7 @@ final class ProductCell: UITableViewCell {
         let label = UILabel()
         label.font = .boldSystemFont(ofSize: 16)
         label.textColor = .black
-        label.numberOfLines = 1
+        label.numberOfLines = 2
         return label
     }()
     
@@ -51,12 +51,12 @@ final class ProductCell: UITableViewCell {
             x: margin,
             y: 12,
             width: labelWidth,
-            height: 24
+            height: 44
         )
         
         bodyLabel.frame = CGRect(
             x: margin,
-            y: titleLabel.frame.maxY + 8,
+            y: titleLabel.frame.maxY + 28,
             width: labelWidth,
             height: 60
         )

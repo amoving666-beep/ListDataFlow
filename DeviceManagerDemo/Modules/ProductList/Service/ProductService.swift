@@ -9,64 +9,78 @@ import Foundation
 
 final class ProductService {
     
-        static func fetchList(page: Int,
-                              limit: Int,
-                              completion: @escaping (Result<[Product], Error>) -> Void) {
+    static func fetchList(page: Int,
+                          limit: Int,
+                          completion: @escaping (Result<[Product], Error>) -> Void) {
+        
+        // 第 1 关：创建 URL。
+        // 如果 URL 字符串本身不合法，URL(string:) 会返回 nil。
+        // 这时候请求还没有发出去，所以要回调 invalidURL。
+        guard let url = URL(string: "https://jsonplaceholder.typicode.com/posts?_page=\(page)&_limit=\(limit)") else {
+            DispatchQueue.main.async {
+                completion(.failure(NetworkError.invalidURL))
+            }
+            return
+        }
+        
+        let task = URLSession.shared.dataTask(with: url) { data, response, error in
             
-            guard let url = URL(string: "https://jsonplaceholder.typicode.com/posts?_page=\(page)&_limit=\(limit)") else {
+            // 第 2 关：判断 URLSession / 系统网络层 error。
+            // 例如：断网、超时、DNS 失败、服务器连不上。
+            // 这里的 error 是系统给的原始 Error，要包进 requestFailed 里。
+            if let error = error {
+                DispatchQueue.main.async {
+                    completion(.failure(NetworkError.requestFailed(error)))
+                }
                 return
             }
             
-            let task = URLSession.shared.dataTask(with: url) { data, response, error in
-                
-                //如果请求过程本身出了错，就直接把失败结果回调出去，并结束。
-                //也就是说，这时候连“正常响应数据”都别想了。请求本身已经挂了。
-                /*
-                 比如 没网 连接超时 域名错误 服务器连不上 请求过程异常
-                 */
-                if let error = error {
-                    DispatchQueue.main.async {
-                        completion(.failure(error))
-                    }
-                    return
+            // 第 3 关：确认 response 是 HTTPURLResponse。
+            // 因为只有 HTTPURLResponse 才有 statusCode。
+            guard let httpResponse = response as? HTTPURLResponse else {
+                DispatchQueue.main.async {
+                    completion(.failure(NetworkError.invalidResponse))
                 }
-                //虽然前面没有网络 error，但返回的数据 data 竟然是 nil，那也算失败。
-                guard let data = data else {
-                    //“data 是 nil，我手动包装成一个错误对象 error，再抛给外面。”
-                    let error = NSError(domain: "ProductServiceError",
-                                        code: -1,
-                                        userInfo: [NSLocalizedDescriptionKey: "data is nil"])
-                    DispatchQueue.main.async {
-                        completion(.failure(error))
-                    }
-                    return
-                }
-                // 1. 先打印接口原始 JSON
-//                    debugPrintDataJSON(data)
-                do {
-                    //尝试把服务器返回的 JSON 数据，解析成 [Product] 然后装到 list 数组
-            
-                    let list = try JSONDecoder().decode([Product].self, from: data)
-                    //main.asyncAfter(deadline: .now() + 3.0) {
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                        // 2. 再打印解码后的模型 JSON
-//                        debugPrintModelJSON(list)
-                        
-                        completion(.success(list))
-                    }
-                } catch {
-                    //如果 try 失败，就会进 catch。
-                    /*
-                     失败原因可能是： JSON 格式不对 字段类型对不上 结构不匹配 你 model 写错了
-                     */
-                    DispatchQueue.main.async {
-                        completion(.failure(error))
-                    }
-                }
+                return
             }
             
-            task.resume()
+            // 第 4 关：判断 HTTP 状态码是否成功。
+            // 200...299 才表示 HTTP 层成功。
+            // 例如 404、500 都会进入 invalidStatusCode。
+            guard (200...299).contains(httpResponse.statusCode) else {
+                DispatchQueue.main.async {
+                    completion(.failure(NetworkError.invalidStatusCode(httpResponse.statusCode)))
+                }
+                return
+            }
+            
+            // 第 5 关：确认 data 存在。
+            // 这里暂时不新增 noData case，今晚先用 invalidResponse 表示“响应不完整”。
+            guard let data = data else {
+                DispatchQueue.main.async {
+                    completion(.failure(NetworkError.invalidResponse))
+                }
+                return
+            }
+            
+            // 第 6 关：JSON 解码。
+            // 网络已经成功，HTTP 状态码也成功，data 也存在。
+            // 如果这里失败，说明是 JSON 结构和 Product 模型对不上。
+            do {
+                let list = try JSONDecoder().decode([Product].self, from: data)
+                
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    completion(.success(list))
+                }
+            } catch {
+                DispatchQueue.main.async {
+                    completion(.failure(NetworkError.decodingFailed(error)))
+                }
+            }
         }
+        
+        task.resume()
+    }
     
 }
 // MARK: - Debug
@@ -87,16 +101,19 @@ do {
 }
 
 private func debugPrintModelJSON<T: Encodable>(_ value: T) {
-let encoder = JSONEncoder()
-encoder.outputFormatting = [.prettyPrinted, .sortedKeys, .withoutEscapingSlashes]
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = [.prettyPrinted, .sortedKeys, .withoutEscapingSlashes]
 
-do {
-    let data = try encoder.encode(value)
-    if let jsonString = String(data: data, encoding: .utf8) {
-        print("===== 模型转 JSON =====")
-        print(jsonString)
-    }
-} catch {
-    print("模型转 JSON 失败: \(error)")
+        do {
+            let data = try encoder.encode(value)
+            if let jsonString = String(data: data, encoding: .utf8) {
+                print("===== 模型转 JSON =====")
+                print(jsonString)
+            }
+        } catch {
+            print("模型转 JSON 失败: \(error)")
+        }
 }
-}
+
+
+
