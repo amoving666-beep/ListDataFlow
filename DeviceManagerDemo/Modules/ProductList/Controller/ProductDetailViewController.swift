@@ -9,13 +9,46 @@ import UIKit
 
 final class ProductDetailViewController: UIViewController {
    
+    private enum ProductValidationError : Error {
+        case emptyTitle
+        case emptyBody
+        case titleTooLong
+        case bodyTooLong
+        
+        var message: String {
+            
+            switch self {
+            case .emptyTitle:
+                return "标题不能为空"
+                
+            case .emptyBody:
+                return "内容不能为空"
+                
+            case .titleTooLong:
+                return "标题不能超过 80 个字符"
+                
+            case .bodyTooLong:
+                return "内容不能超过 500 个字符"
+                
+            }
+        }
+    }
     private var product: Product
+    
     var onSave: ((Product) -> Void)?
     
     private let titleLabel = UILabel()
     private let bodyLabel = UILabel()
     private let titleTF = UITextField()
     private let bodyTF = UITextField()
+    private let titleErrorLabel = UILabel()
+    private let bodyErrorLabel = UILabel()
+    private lazy var saveButtonItem = UIBarButtonItem(
+        title: "保存",
+        style: .plain,
+        target: self,
+        action: #selector(saveButtonTapped)
+    )
     
     
     init(product: Product) {
@@ -43,7 +76,7 @@ final class ProductDetailViewController: UIViewController {
 extension ProductDetailViewController {
     
     private func setupUI() {
-        navigationItem.rightBarButtonItem = UIBarButtonItem(title: "保存", style: .plain, target: self, action: #selector(saveButtonTapped))
+        navigationItem.rightBarButtonItem = saveButtonItem
         
         titleLabel.font = .boldSystemFont(ofSize: 20)
         titleLabel.numberOfLines = 0
@@ -60,8 +93,13 @@ extension ProductDetailViewController {
         
         setupField(titleTF, placeholder: "标题")
         setupField(bodyTF, placeholder: "内容")
-        titleTF.frame = CGRect(x: 20, y: bodyLabel.frame.origin.y+300+50, width: view.bounds.width - 40, height: 100)
-        bodyTF.frame = CGRect(x: 20, y: titleTF.frame.origin.y+100+50, width: view.bounds.width - 40, height: 100)
+        setupErrorLabel(titleErrorLabel)
+        setupErrorLabel(bodyErrorLabel)
+        
+        titleTF.frame = CGRect(x: 20, y: bodyLabel.frame.origin.y + 300 + 50, width: view.bounds.width - 40, height: 44)
+        titleErrorLabel.frame = CGRect(x: 20, y: titleTF.frame.maxY + 6, width: view.bounds.width - 40, height: 20)
+        bodyTF.frame = CGRect(x: 20, y: titleErrorLabel.frame.maxY + 20, width: view.bounds.width - 40, height: 44)
+        bodyErrorLabel.frame = CGRect(x: 20, y: bodyTF.frame.maxY + 6, width: view.bounds.width - 40, height: 20)
 
         titleTF.delegate = self
         titleTF.tag = 100
@@ -71,13 +109,21 @@ extension ProductDetailViewController {
         view.addSubview(titleLabel)
         view.addSubview(bodyLabel)
         view.addSubview(titleTF)
+        view.addSubview(titleErrorLabel)
         view.addSubview(bodyTF)
+        view.addSubview(bodyErrorLabel)
     }
     private func setupField(_ field:UITextField, placeholder: String){
         field.placeholder = placeholder
         field.borderStyle = .roundedRect
         field.clearButtonMode = .whileEditing
         field.autocapitalizationType = .none
+    }
+
+    private func setupErrorLabel(_ label: UILabel) {
+        label.font = .systemFont(ofSize: 12)
+        label.textColor = .systemRed
+        label.isHidden = true
     }
     private func loadData() {
         titleLabel.text = "名称：\(product.title)"
@@ -87,14 +133,113 @@ extension ProductDetailViewController {
     private func fillData () {
         titleTF.text = product.title
         bodyTF.text = product.body
+        updateTitleValidationUI()
+        updateBodyValidationUI()
+        updateSaveButtonState()
+    }
+    
+    private func validateTitle() -> ProductValidationError? {
+        let title = titleTF.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        
+        if title.isEmpty {
+            return .emptyTitle
+        }
+        
+        if title.count > 80 {
+            return .titleTooLong
+        }
+        return nil
+    }
+    
+    private func validateBody() -> ProductValidationError? {
+
+        let body = bodyTF.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+
+        if body.isEmpty {
+            return .emptyBody
+        }
+        if body.count > 500 {
+            return .bodyTooLong
+        }
+        return nil
+    }
+
+    private func validateInput() -> Result<(title: String, body: String), ProductValidationError> {
+       
+        let title = titleTF.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        let body = bodyTF.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        
+        if let titleError = validateTitle() {
+            return .failure(titleError)
+        }
+        
+        if let bodyError = validateBody() {
+            return .failure(bodyError)
+        }
+        
+        return .success((title: title, body: body))
+    }
+
+    private func updateTitleValidationUI() {
+        if let error = validateTitle() {
+            titleErrorLabel.text = error.message
+            titleErrorLabel.isHidden = false
+            titleTF.layer.borderWidth = 1
+            titleTF.layer.borderColor = UIColor.systemRed.cgColor
+            titleTF.layer.cornerRadius = 6
+        } else {
+            titleErrorLabel.text = nil
+            titleErrorLabel.isHidden = true
+            titleTF.layer.borderWidth = 0
+            titleTF.layer.borderColor = nil
+        }
+    }
+    
+    private func updateBodyValidationUI() {
+        if let error = validateBody() {
+            bodyErrorLabel.text = error.message
+            bodyErrorLabel.isHidden = false
+            bodyTF.layer.borderWidth = 1
+            bodyTF.layer.borderColor = UIColor.systemRed.cgColor
+            bodyTF.layer.cornerRadius = 6
+        } else {
+            bodyErrorLabel.text = nil
+            bodyErrorLabel.isHidden = true
+            bodyTF.layer.borderWidth = 0
+            bodyTF.layer.borderColor = nil
+        }
+    }
+
+    private func updateSaveButtonState() {
+        let titleIsValid = validateTitle() == nil
+        let bodyIsValid = validateBody() == nil
+        saveButtonItem.isEnabled = titleIsValid && bodyIsValid
     }
     @objc private func saveButtonTapped() {
+        switch validateInput() {
+        case .success(let input):
+            let newProduct = Product(
+                userId: product.userId,
+                id: product.id,
+                title: input.title,
+                body: input.body
+            )
+            onSave?(newProduct)
+            navigationController?.popViewController(animated: true)
+            
+        case .failure(let error):
+            showValidationError(error)
+        }
+    }
+
+    private func showValidationError(_ error: ProductValidationError) {
+        updateTitleValidationUI()
+        updateBodyValidationUI()
+        updateSaveButtonState()
         
-        let newProduct = Product(
-            userId:product.userId, id: product.id, title: titleTF.text ?? "", body: bodyTF.text ?? ""
-        )
-        onSave?(newProduct)
-        navigationController?.popViewController(animated: true)
+        let alert = UIAlertController(title: "输入有误", message: error.message, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "知道了", style: .default))
+        present(alert, animated: true)
     }
 }
 extension ProductDetailViewController:UITextFieldDelegate{
@@ -104,12 +249,14 @@ extension ProductDetailViewController:UITextFieldDelegate{
             switch textField.tag {
             case 100:
                 titleLabel.text = titleTF.text ?? ""
+                updateTitleValidationUI()
             case 200:
                 bodyLabel.text = bodyTF.text ?? ""
+                updateBodyValidationUI()
             default:
                 break
             }
-        
+            updateSaveButtonState()
     }
     
     
