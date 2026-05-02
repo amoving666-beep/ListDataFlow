@@ -9,9 +9,21 @@ import Foundation
 
 final class ProductService {
     
+    /// 请求商品列表
+    ///
+    /// 返回值：URLSessionDataTask?
+    ///
+    /// 为什么要返回 task：
+    /// - 以前这个方法只负责发请求，外部无法取消
+    /// - 现在把 task 返回给 VC，VC 就可以在需要时 cancel
+    /// - 例如：页面销毁、用户重新下拉刷新、旧请求不再需要时，都可以取消旧请求
+    ///
+    /// 为什么是可选：
+    /// - 如果 URL 创建失败，请求根本不会发出去，也就没有 task 可以返回
+    @discardableResult
     static func fetchList(page: Int,
                           limit: Int,
-                          completion: @escaping (Result<[Product], Error>) -> Void) {
+                          completion: @escaping (Result<[Product], Error>) -> Void) -> URLSessionDataTask? {
         
         // 第 1 关：创建 URL。
         // 如果 URL 字符串本身不合法，URL(string:) 会返回 nil。
@@ -20,7 +32,9 @@ final class ProductService {
             DispatchQueue.main.async {
                 completion(.failure(NetworkError.invalidURL))
             }
-            return
+            
+            // URL 创建失败，请求没有真正发出去，所以没有 URLSessionDataTask 可以返回。
+            return nil
         }
         
         let task = URLSession.shared.dataTask(with: url) { data, response, error in
@@ -80,6 +94,10 @@ final class ProductService {
         }
         
         task.resume()
+        
+        // 把 task 返回给调用方。
+        // 调用方可以保存这个 task，后续根据需要调用 task.cancel() 取消请求。
+        return task
     }
     
 }
