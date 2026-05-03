@@ -256,7 +256,9 @@ extension ProductListViewController {
     
     private func setupTableView() {
         tableView.frame = view.bounds
-        tableView.rowHeight = 120
+        
+        tableView.rowHeight = UITableView.automaticDimension
+        tableView.estimatedRowHeight = 120
         
         setupTableFooterView()
         
