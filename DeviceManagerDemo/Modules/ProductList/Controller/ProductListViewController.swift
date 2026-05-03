@@ -55,12 +55,6 @@ final class ProductListViewController: UIViewController {
     
     // MARK: - Data State
     
-    /// VC 保留一份列表数据镜像，专门给 tableViewDataSource 使用。
-    ///
-    /// 真正的分页状态、请求状态、缓存状态已经交给 ProductListViewModel 管。
-    /// ViewModel 的 products 一变化，会通过 onProductsChanged 回调给 VC。
-    private var productList: [Product] = []
-    
     /// 防止 scrollViewDidScroll 在底部触发区内重复触发 loadMore。
     ///
     /// false：还没触发，可以触发。
@@ -194,11 +188,11 @@ extension ProductListViewController {
 extension ProductListViewController {
     
     private func bindViewModel() {
-        /// ViewModel 数据源变化后，VC 更新自己的展示镜像并刷新 tableView。
-        viewModel.onProductsChanged = { [weak self] products in
-            guard let self = self else { return }
-            self.productList = products
-            self.tableView.reloadData()
+        /// ViewModel 数据源变化后，VC 只负责刷新 tableView。
+        ///
+        /// 数据源已经由 viewModel.products 持有，VC 不再保留 productList 镜像。
+        viewModel.onProductsChanged = { [weak self] _ in
+            self?.tableView.reloadData()
         }
         
         /// ViewModel 通知页面主状态变化，VC 负责真正渲染 UI。
@@ -304,7 +298,7 @@ extension ProductListViewController {
 extension ProductListViewController: UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return productList.count
+        return viewModel.products.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -313,7 +307,7 @@ extension ProductListViewController: UITableViewDataSource {
             for: indexPath
         ) as! ProductCell
         
-        let product = productList[indexPath.row]
+        let product = viewModel.products[indexPath.row]
         cell.configure(with: product)
         cell.accessoryType = .disclosureIndicator
         
@@ -327,7 +321,7 @@ extension ProductListViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
         
-        let model = productList[indexPath.row]
+        let model = viewModel.products[indexPath.row]
         let detailVC = ProductDetailViewController(product: model)
         
         /// 详情页保存后，把 newProduct 交给 ViewModel 更新数据源和缓存。
