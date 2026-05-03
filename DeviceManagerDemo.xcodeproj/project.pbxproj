@@ -23,6 +23,7 @@
 		2B462D292F9111E200B19AFA /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2B462D152F9111E200B19AFA /* Assets.xcassets */; };
 		2B462D2B2F9111E200B19AFA /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2B462D1C2F9111E200B19AFA /* LaunchScreen.storyboard */; };
 		2B462D2C2F9111E200B19AFA /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2B462D1E2F9111E200B19AFA /* Main.storyboard */; };
+		2B7D654B2FA7416700C9D900 /* ProductListViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B7D654A2FA7416700C9D900 /* ProductListViewModel.swift */; };
 		2BC976452FA102C3000D94EE /* NetworkError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2BC976442FA102C3000D94EE /* NetworkError.swift */; };
 /* End PBXBuildFile section */
 
@@ -45,6 +46,7 @@
 		2B462D1D2F9111E200B19AFA /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		2B462D1F2F9111E200B19AFA /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
 		2B462D202F9111E200B19AFA /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
+		2B7D654A2FA7416700C9D900 /* ProductListViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProductListViewModel.swift; sourceTree = "<group>"; };
 		2BC976442FA102C3000D94EE /* NetworkError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkError.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -102,6 +104,7 @@
 			isa = PBXGroup;
 			children = (
 				2B260CFD2F94F14A00F95950 /* Product.swift */,
+				2B7D654A2FA7416700C9D900 /* ProductListViewModel.swift */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -249,6 +252,7 @@
 				2B0DAB982F9F920A00C9BD5A /* CacheHelper.swift in Sources */,
 				2B260D042F94F17900F95950 /* ProductDetailViewController.swift in Sources */,
 				2B260D062F94F48B00F95950 /* ProductService.swift in Sources */,
+				2B7D654B2FA7416700C9D900 /* ProductListViewModel.swift in Sources */,
 				2B0DAB952F9F88AE00C9BD5A /* ProductCell.swift in Sources */,
 				2B462D272F9111E200B19AFA /* SceneDelegate.swift in Sources */,
 				2B462D282F9111E200B19AFA /* ViewController.swift in Sources */,
