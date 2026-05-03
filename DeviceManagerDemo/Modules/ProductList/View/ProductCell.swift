@@ -13,17 +13,19 @@ final class ProductCell: UITableViewCell {
     
     private let titleLabel: UILabel = {
         let label = UILabel()
-        label.font = .boldSystemFont(ofSize: 16)
+        label.font = .boldSystemFont(ofSize: 18)
         label.textColor = .black
         label.numberOfLines = 2
+        label.backgroundColor = .systemRed
         return label
     }()
     
     private let bodyLabel: UILabel = {
         let label = UILabel()
-        label.font = .systemFont(ofSize: 14)
+        label.font = .systemFont(ofSize: 12)
         label.textColor = .darkGray
         label.numberOfLines = 2
+        label.backgroundColor = .yellow
         return label
     }()
     
@@ -56,7 +58,7 @@ final class ProductCell: UITableViewCell {
         
         bodyLabel.frame = CGRect(
             x: margin,
-            y: titleLabel.frame.maxY + 28,
+            y: titleLabel.frame.maxY + 2,
             width: labelWidth,
             height: 60
         )

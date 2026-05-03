@@ -748,11 +748,29 @@ extension ProductListViewController: UITableViewDelegate {
         /// - 最后 saveCache 保证本地缓存也同步更新
         detailVC.onSave = { [weak self] newProduct in
             guard let self = self else { return }
-            guard indexPath.row < self.productList.count else { return }
+           // guard indexPath.row < self.productList.count else { return }
             
-            self.productList[indexPath.row] = newProduct
+            /// 不再长期依赖进入详情页时的 indexPath.row。
+            ///
+            /// 原因：
+            /// indexPath.row 只是“当时点击的行号”，不是稳定身份。
+            /// 如果详情页还没保存前，列表发生刷新、排序、删除，
+            /// 原来的 row 可能已经不是原来的那条数据。
+            ///
+            /// 更稳的做法：
+            /// 用 newProduct.id 回到当前 productList 里重新查找真实位置。
+            ///
+            guard let index = self.productList.firstIndex(where: { $0.id == newProduct.id }) else {
+                    print("保存失败：列表中找不到 id = \(newProduct.id) 的数据")
+                    return
+                }
+            /// 更新当前数组中真正对应的那一条数据
+            self.productList[index] = newProduct
+            /// 保存最新缓存，保证下次启动还能看到修改后的本地数据
             self.saveCache()
-            self.tableView.reloadRows(at: [indexPath], with: .automatic)
+            /// 用最新 index 重新生成 IndexPath，再局部刷新当前行
+            let updatedIndexPath = IndexPath(row: index, section: 0)
+            self.tableView.reloadRows(at: [updatedIndexPath], with: .automatic)
         }
         
         navigationController?.pushViewController(detailVC, animated: true)
