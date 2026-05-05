@@ -100,14 +100,8 @@ final class ProductListViewModel {
     func loadData(mode: LoadMode) {
         /// 下拉刷新代表用户想要最新的第一页数据。
         /// 如果旧请求还在飞，先取消旧请求，再允许新的刷新请求发出去。
-        if mode == .refresh && loadState != .idle {
-            currentTask?.cancel()
-            currentTask = nil
-            loadState = .idle
-            onFooterStateChanged?(makeFooterStateForCurrentList())
-            print("下拉刷新触发：取消旧请求，准备重新请求第一页")
-        }
-
+        prepareForNewRequestIfNeeded(mode: mode)
+        
         guard canLoadData(mode: mode) else {
             return
         }
@@ -142,6 +136,30 @@ final class ProductListViewModel {
         }
     }
 
+    private func prepareForNewRequestIfNeeded(mode: LoadMode) {
+        /// 目前只有 refresh 需要在新请求前做特殊准备。
+        ///
+        /// 原因：
+        /// - refresh 代表用户想要最新第一页
+        /// - 如果旧请求还在飞，旧请求结果已经不重要
+        /// - 所以可以 cancel 旧请求，再重新发起 refresh
+        ///
+        /// loadMore 不走这里：
+        /// - loadMore 是分页追加
+        /// - 应该串行加载
+        /// - 不应该随便取消旧 loadMore
+        guard mode == .refresh, loadState != .idle else {
+            return
+        }
+
+        currentTask?.cancel()
+        currentTask = nil
+        loadState = .idle
+        onFooterStateChanged?(makeFooterStateForCurrentList())
+
+        print("下拉刷新触发：取消旧请求，准备重新请求第一页")
+    }
+    
     /// 详情页回传后，用 id 更新 ViewModel 内部的数据源和缓存。
     @discardableResult
     func updateProduct(_ newProduct: Product) -> Int? {
@@ -182,7 +200,9 @@ final class ProductListViewModel {
     }
 
     private func beginLoading(mode: LoadMode) {
+        
         switch mode {
+       
         case .initial:
             loadState = .initialLoading
         case .refresh:
