@@ -1,0 +1,31 @@
+{
+  "configurations" : [
+    {
+      "id" : "69806369-ECF0-4BA5-9BA2-94B6060DE142",
+      "name" : "Test Scheme Action",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "performanceAntipatternCheckerEnabled" : true,
+    "targetForVariableExpansion" : {
+      "containerPath" : "container:DeviceManagerDemo.xcodeproj",
+      "identifier" : "2B462CF32F910DD900B19AFA",
+      "name" : "DeviceManagerDemo"
+    }
+  },
+  "testTargets" : [
+    {
+      "enabled" : false,
+      "parallelizable" : true,
+      "target" : {
+        "containerPath" : "container:DeviceManagerDemo.xcodeproj",
+        "identifier" : "2B403BCD2FAB807F00C84332",
+        "name" : "DeviceManagerDemoTests"
+      }
+    }
+  ],
+  "version" : 1
+}
