@@ -128,4 +128,7 @@ enum NetworkError: Error {
     /// decodingFailed 不代表网络请求失败。
     /// 它代表“网络已经成功拿到数据，但 Swift Model 解析失败”。
     case decodingFailed(Error)
+    
+    
+    case noData
 }

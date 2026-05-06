@@ -7,28 +7,14 @@
 
 import Foundation
 
-final class ProductService {
+final class ProductService: ProductServiceProtocol {
     
-    /// 请求商品列表
-    ///
-    /// 返回值：URLSessionDataTask?
-    ///
-    /// 为什么要返回 task：
-    /// - 以前这个方法只负责发请求，外部无法取消
-    /// - 现在把 task 返回给 VC，VC 就可以在需要时 cancel
-    /// - 例如：页面销毁、用户重新下拉刷新、旧请求不再需要时，都可以取消旧请求
-    ///
-    /// 为什么是可选：
-    /// - 如果 URL 创建失败，请求根本不会发出去，也就没有 task 可以返回
     @discardableResult
-    static func fetchList(page: Int,
-                          limit: Int,
-                          completion: @escaping (Result<[Product], Error>) -> Void) -> URLSessionDataTask? {
-        
+    func fetchList(page: Int, pageSize: Int, completion: @escaping (Result<[Product], NetworkError>) -> Void) -> URLSessionDataTask? {
         // 第 1 关：创建 URL。
         // 如果 URL 字符串本身不合法，URL(string:) 会返回 nil。
         // 这时候请求还没有发出去，所以要回调 invalidURL。
-        guard let url = URL(string: "https://jsonplaceholder.typicode.com/posts?_page=\(page)&_limit=\(limit)") else {
+        guard let url = URL(string: "https://jsonplaceholder.typicode.com/posts?_page=\(page)&_limit=\(pageSize)") else {
             DispatchQueue.main.async {
                 completion(.failure(NetworkError.invalidURL))
             }
@@ -69,10 +55,10 @@ final class ProductService {
             }
             
             // 第 5 关：确认 data 存在。
-            // 这里暂时不新增 noData case，今晚先用 invalidResponse 表示“响应不完整”。
+            // HTTP response 和状态码都正常，但服务器没有返回 body 数据时，走 noData。
             guard let data = data else {
                 DispatchQueue.main.async {
-                    completion(.failure(NetworkError.invalidResponse))
+                    completion(.failure(NetworkError.noData))
                 }
                 return
             }
@@ -99,38 +85,40 @@ final class ProductService {
         // 调用方可以保存这个 task，后续根据需要调用 task.cancel() 取消请求。
         return task
     }
-    
 }
+    
 // MARK: - Debug
 
 private func debugPrintDataJSON(_ data: Data) {
-    
-do {
-    let obj = try JSONSerialization.jsonObject(with: data, options: [])
-    let prettyData = try JSONSerialization.data(withJSONObject: obj, options: [.prettyPrinted, .fragmentsAllowed])
+    do {
+        let obj = try JSONSerialization.jsonObject(with: data, options: [])
+        let prettyData = try JSONSerialization.data(
+            withJSONObject: obj,
+            options: [.prettyPrinted, .fragmentsAllowed]
+        )
 
-    if let prettyString = String(data: prettyData, encoding: .utf8) {
-        print("===== 原始 JSON =====")
-        print(prettyString)
+        if let prettyString = String(data: prettyData, encoding: .utf8) {
+            print("===== 原始 JSON =====")
+            print(prettyString)
+        }
+    } catch {
+        print("JSON 格式化失败: \(error)")
     }
-} catch {
-    print("JSON 格式化失败: \(error)")
-}
 }
 
 private func debugPrintModelJSON<T: Encodable>(_ value: T) {
-        let encoder = JSONEncoder()
-        encoder.outputFormatting = [.prettyPrinted, .sortedKeys, .withoutEscapingSlashes]
+    let encoder = JSONEncoder()
+    encoder.outputFormatting = [.prettyPrinted, .sortedKeys, .withoutEscapingSlashes]
 
-        do {
-            let data = try encoder.encode(value)
-            if let jsonString = String(data: data, encoding: .utf8) {
-                print("===== 模型转 JSON =====")
-                print(jsonString)
-            }
-        } catch {
-            print("模型转 JSON 失败: \(error)")
+    do {
+        let data = try encoder.encode(value)
+        if let jsonString = String(data: data, encoding: .utf8) {
+            print("===== 模型转 JSON =====")
+            print(jsonString)
         }
+    } catch {
+        print("模型转 JSON 失败: \(error)")
+    }
 }
 
 

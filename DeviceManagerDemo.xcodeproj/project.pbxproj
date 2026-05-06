@@ -13,6 +13,7 @@
 		2B260D022F94F16E00F95950 /* ProductListViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B260D012F94F16E00F95950 /* ProductListViewController.swift */; };
 		2B260D042F94F17900F95950 /* ProductDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B260D032F94F17900F95950 /* ProductDetailViewController.swift */; };
 		2B260D062F94F48B00F95950 /* ProductService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B260D052F94F48B00F95950 /* ProductService.swift */; };
+		2B403BC92FAB649D00C84332 /* ProductServiceProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B403BC82FAB649D00C84332 /* ProductServiceProtocol.swift */; };
 		2B462D222F9111E200B19AFA /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B462D142F9111E200B19AFA /* AppDelegate.swift */; };
 		2B462D232F9111E200B19AFA /* DeviceCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B462D162F9111E200B19AFA /* DeviceCell.swift */; };
 		2B462D242F9111E200B19AFA /* DeviceDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B462D172F9111E200B19AFA /* DeviceDetailViewController.swift */; };
@@ -34,6 +35,7 @@
 		2B260D012F94F16E00F95950 /* ProductListViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProductListViewController.swift; sourceTree = "<group>"; };
 		2B260D032F94F17900F95950 /* ProductDetailViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProductDetailViewController.swift; sourceTree = "<group>"; };
 		2B260D052F94F48B00F95950 /* ProductService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProductService.swift; sourceTree = "<group>"; };
+		2B403BC82FAB649D00C84332 /* ProductServiceProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProductServiceProtocol.swift; sourceTree = "<group>"; };
 		2B462CF42F910DD900B19AFA /* DeviceManagerDemo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DeviceManagerDemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		2B462D142F9111E200B19AFA /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		2B462D152F9111E200B19AFA /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -112,8 +114,9 @@
 		2B260D092F94F50200F95950 /* Service */ = {
 			isa = PBXGroup;
 			children = (
-				2B260D052F94F48B00F95950 /* ProductService.swift */,
 				2BC976442FA102C3000D94EE /* NetworkError.swift */,
+				2B260D052F94F48B00F95950 /* ProductService.swift */,
+				2B403BC82FAB649D00C84332 /* ProductServiceProtocol.swift */,
 			);
 			path = Service;
 			sourceTree = "<group>";
@@ -252,6 +255,7 @@
 				2B0DAB982F9F920A00C9BD5A /* CacheHelper.swift in Sources */,
 				2B260D042F94F17900F95950 /* ProductDetailViewController.swift in Sources */,
 				2B260D062F94F48B00F95950 /* ProductService.swift in Sources */,
+				2B403BC92FAB649D00C84332 /* ProductServiceProtocol.swift in Sources */,
 				2B7D654B2FA7416700C9D900 /* ProductListViewModel.swift in Sources */,
 				2B0DAB952F9F88AE00C9BD5A /* ProductCell.swift in Sources */,
 				2B462D272F9111E200B19AFA /* SceneDelegate.swift in Sources */,

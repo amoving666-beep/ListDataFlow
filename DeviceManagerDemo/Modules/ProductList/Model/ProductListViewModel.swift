@@ -43,6 +43,24 @@ final class ProductListViewModel {
     private var hasMoreData: Bool = true
     private let cacheKey = "ProductListCacheKey"
 
+    /// 网络请求服务
+    ///
+    /// ViewModel 不直接写死 ProductService，
+    /// 而是通过 ProductServiceProtocol 接收一个 service。
+    ///
+    /// 默认值是 ProductService()，所以正式运行时不用额外传。
+    /// 后续测试时，可以传 MockProductService。
+    private let service: ProductServiceProtocol
+    
+    /// 初始化 ViewModel
+    ///
+    /// - Parameter service: 请求服务，默认使用真实的 ProductService
+    init(service: ProductServiceProtocol = ProductService()) {
+
+        self.service = service
+
+    }
+    
     /// 给 VC 的 scrollViewDidScroll 用。
     /// VC 不需要知道 loadState / hasMoreData 的细节，只问一句：现在能不能加载更多。
     var canLoadMore: Bool {
@@ -115,7 +133,7 @@ final class ProductListViewModel {
         currentRequestID += 1
         let requestID = currentRequestID
 
-        currentTask = ProductService.fetchList(page: targetPage, limit: pageSize) { [weak self] result in
+        currentTask = service.fetchList(page: targetPage, pageSize: pageSize) { [weak self] result in
             guard let self = self else { return }
 
             guard requestID == self.currentRequestID else {
@@ -298,3 +316,22 @@ final class ProductListViewModel {
     }
 }
 
+/*
+prepareForNewRequestIfNeeded：
+请求前准备；refresh 时取消旧请求；不发请求。
+
+canLoadData：
+只判断能不能请求；不改状态、不取消、不发请求。
+
+beginLoading：
+进入请求状态；设置 loadState；必要时通知 loading/footer loading。
+
+makeTargetPage：
+只计算目标页码；不修改 currentPage。
+
+finishLoading：
+请求结束收尾；loadState 回 idle；更新 footer；不处理数据。
+
+handleLoadSuccess：
+成功后处理数据；refresh 替换、loadMore 追加；更新页码、hasMoreData、缓存，并通知 VC。
+*/
