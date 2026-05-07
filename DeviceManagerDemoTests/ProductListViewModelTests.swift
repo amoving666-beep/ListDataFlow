@@ -15,31 +15,37 @@ import XCTest
 final class ProductListViewModelTests: XCTestCase {
 
     func testInitialSuccess() {
-        // Given：准备一个假的网络服务
+
+        // Given：准备假 Service，让它模拟“请求成功”
+
         let mockService = MockProductService()
 
-          XCTAssertNotNil(mockService)
-        // Given：准备一个假的网络服务，并指定它返回成功数据
-//        let mockService = MockProductService()
-//        mockService.result = .success([
-//            Product(userId: 1, id: 1, title: "测试标题1", body: "测试内容1"),
-//            Product(userId: 1, id: 2, title: "测试标题2", body: "测试内容2")
-//        ])
-//        
-//        // Given：把假 Service 注入 ViewModel
-//        // 这样 loadData 不会真的请求网络，而是使用 mockService 返回的数据
-//        let viewModel = ProductListViewModel(service: mockService)
-//        
-//        // When：模拟 VC 首次进入页面时触发 initial 加载
-//        viewModel.loadData(mode: .initial)
-//        
-//        // Then：验证 ViewModel 是否请求了第 1 页
-//        XCTAssertEqual(mockService.requestedPage, 1)
-//        
-//        // Then：验证 products 是否被成功更新
-//        XCTAssertEqual(viewModel.products.count, 2)
-//        XCTAssertEqual(viewModel.products.first?.title, "测试标题1")
-//        XCTAssertEqual(viewModel.products.last?.body, "测试内容2")
+        let mockProducts = [
+
+            Product(userId: 1, id: 1, title: "标题1", body: "内容1"),
+
+            Product(userId: 1, id: 2, title: "标题2", body: "内容2")
+
+        ]
+
+        mockService.result = .success(mockProducts)
+
+        let viewModel = ProductListViewModel(service: mockService)
+
+        // When：模拟 VC 触发首次加载
+
+        viewModel.loadData(mode: .initial)
+
+        // Then：检查 ViewModel 的结果是否符合预期
+
+        XCTAssertEqual(mockService.requestedPage, 1)
+
+        XCTAssertEqual(viewModel.products.count, 2)
+
+        XCTAssertEqual(viewModel.products.first?.title, "标题1")
+
+        XCTAssertEqual(viewModel.products.last?.body, "内容2")
+
     }
     
 }

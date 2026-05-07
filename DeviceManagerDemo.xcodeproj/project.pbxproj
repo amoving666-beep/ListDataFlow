@@ -47,6 +47,7 @@
 		2B260D052F94F48B00F95950 /* ProductService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProductService.swift; sourceTree = "<group>"; };
 		2B403BC82FAB649D00C84332 /* ProductServiceProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProductServiceProtocol.swift; sourceTree = "<group>"; };
 		2B403BCE2FAB807F00C84332 /* DeviceManagerDemoTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DeviceManagerDemoTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		2B403BE12FAB9D5700C84332 /* DeviceManagerDemo.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = DeviceManagerDemo.xctestplan; sourceTree = "<group>"; };
 		2B462CF42F910DD900B19AFA /* DeviceManagerDemo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DeviceManagerDemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		2B462D142F9111E200B19AFA /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		2B462D152F9111E200B19AFA /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -167,6 +168,7 @@
 		2B462CEB2F910DD900B19AFA = {
 			isa = PBXGroup;
 			children = (
+				2B403BE12FAB9D5700C84332 /* DeviceManagerDemo.xctestplan */,
 				2B462D212F9111E200B19AFA /* DeviceManagerDemo */,
 				2B403BCF2FAB807F00C84332 /* DeviceManagerDemoTests */,
 				2B462CF52F910DD900B19AFA /* Products */,
@@ -515,7 +517,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 26.2;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
@@ -572,7 +574,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 26.2;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;

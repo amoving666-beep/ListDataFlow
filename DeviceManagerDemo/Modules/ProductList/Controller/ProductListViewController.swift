@@ -255,14 +255,18 @@ extension ProductListViewController {
             
         case .content:
             loadingView.stopAnimating()
+            refreshControl.endRefreshing()
             tableView.isHidden = false
             emptyLabel.isHidden = true
+            isLoadMoreTriggered = false
             
         case .empty(let message), .error(let message):
             loadingView.stopAnimating()
+            refreshControl.endRefreshing()
             tableView.isHidden = false
             emptyLabel.text = message
             emptyLabel.isHidden = false
+            isLoadMoreTriggered = false
         }
     }
 }

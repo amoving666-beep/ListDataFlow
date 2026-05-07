@@ -19,6 +19,16 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         //创建窗口。iOS 13 以后，一个 Scene 对应一个 Window。
         let window = UIWindow(windowScene: windowScene)
         
+        
+        if isRunningUnitTests {
+            print("当前是单元测试环境，不启动真实首页")
+
+            window.rootViewController = UIViewController()
+            window.makeKeyAndVisible()
+            self.window = window
+            return
+        }
+        
         //创建你的列表页。
         let rootVC = ProductListViewController()
         
@@ -71,6 +81,8 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         // to restore the scene back to its current state.
     }
 
-
+    private var isRunningUnitTests: Bool {
+        return ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
+             || NSClassFromString("XCTest.XCTestCase") != nil
+    }
 }
-
