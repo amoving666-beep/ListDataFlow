@@ -197,7 +197,89 @@ final class ProductListViewModelTests: XCTestCase {
     }
 
     // MARK: - Load More
+    func testLoadMoreSuccess_appendsNewProducts() {
+        // Given：先准备旧数据，让 ViewModel 处于已经有列表内容的状态
+        let mockService = MockProductService()
+        let viewModel = makeViewModel(service: mockService)
 
+        let oldProducts = (1...10).map{
+            makeProduct(id: $0, title: "第一页标题\($0)", body: "第一页内容\($0)")
+        }
+
+        // 第一次请求：让 MockService 返回旧数据。
+        // 这一步是真的执行 initial 请求，目的是先把 ViewModel 填成旧列表状态。
+        mockService.result = .success(oldProducts)
+        viewModel.loadData(mode: .initial)
+
+        let newProducts = [
+            makeProduct(id: 11, title: "第二页标题11", body: "第二页内容11"),
+            makeProduct(id: 12, title: "第二页标题12", body: "第二页内容12")
+        ]
+
+        // 第二次请求前，修改 MockService 的返回值为新数据。
+        // 注意：这句不会自动改变 viewModel.products。
+        // 只有下面执行 loadData(mode: .refresh) 时，ViewModel 才会拿到 3、4。
+        mockService.result = .success(newProducts)
+
+        var didCallOnProductsChanged = false
+        var didReceiveContentState = false
+        var didReceiveNoMoreDataFooterState = false
+
+        viewModel.onProductsChanged = { products in
+            didCallOnProductsChanged = true
+            XCTAssertEqual(products.count, 12, "refresh 成功后回调出去的 products 数量应该是新数据数量")
+        }
+
+        viewModel.onViewStateChanged = { state in
+            switch state {
+            case .content:
+                didReceiveContentState = true
+            default:
+                break
+            }
+        }
+
+        viewModel.onFooterStateChanged = { state in
+            switch state {
+            case .noMoreData:
+                didReceiveNoMoreDataFooterState = true
+            default:
+                break
+            }
+        }
+        // When：执行下拉刷新
+        viewModel.loadData(mode: .loadMore)
+
+        // Then：验证 refresh 请求第一页
+        XCTAssertEqual(mockService.requestedPage, 2, "refresh 模式应该重新请求第 1 页")
+
+        // Then：验证 refresh 成功后 products 是新数据数量，不是旧数据 + 新数据
+        XCTAssertEqual(viewModel.products.count, 12, "refresh 成功后应该替换旧数据，而不是 append")
+
+        // Then：验证第一条数据已经变成新数据
+        XCTAssertEqual(viewModel.products.first?.id, 1, "refresh 后第一条应该是新数据 id = 3")
+        XCTAssertEqual(viewModel.products.first?.title, "第一页标题1", "refresh 后第一条 title 应该是新标题")
+        XCTAssertEqual(viewModel.products.first?.body, "第一页内容1", "refresh 后第一条 body 应该是新内容")
+
+        // Then：验证最后一条数据已经变成新数据
+        XCTAssertEqual(viewModel.products.last?.id, 12, "refresh 后最后一条应该是新数据 id = 4")
+        XCTAssertEqual(viewModel.products.last?.title, "第二页标题12", "refresh 后最后一条 title 应该是新标题")
+        XCTAssertEqual(viewModel.products.last?.body, "第二页内容12", "refresh 后最后一条 body 应该是新内容")
+
+//        // Then：验证旧数据已经不存在，证明 refresh 是 replace，不是 append
+//        XCTAssertFalse(viewModel.products.contains(where: { $0.id == 1 }), "refresh 后不应该再包含旧数据 id = 1")
+//        XCTAssertFalse(viewModel.products.contains(where: { $0.id == 2 }), "refresh 后不应该再包含旧数据 id = 2")
+
+        // Then：验证 ViewModel 请求成功后通知 VC 刷新列表
+        XCTAssertTrue(didCallOnProductsChanged, "refresh 成功后应该触发 onProductsChanged")
+
+        // Then：验证 refresh 成功并且有数据时，页面保持 content 状态
+        XCTAssertTrue(didReceiveContentState, "refresh 成功且有数据时，ViewState 应该是 content")
+
+        // Then：验证返回数据数量小于 pageSize 时，footer 进入 noMoreData 状态
+        XCTAssertTrue(didReceiveNoMoreDataFooterState, "refresh 返回数据数量小于 pageSize 时，FooterState 应该进入 noMoreData")
+
+    }
     // MARK: - Failure
 
     // MARK: - Update Product
