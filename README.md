@@ -67,7 +67,7 @@ DeviceManagerDemo
 │
 └── SceneDelegate.swift
 
-⸻
+---
 
 架构说明
 
@@ -87,7 +87,7 @@ ProductListViewController 负责 UIKit 层，包括：
 
 VC 不再直接管理分页、缓存、请求生命周期和数据更新逻辑。
 
-⸻
+---
 
 ProductListViewModel
 
@@ -107,7 +107,7 @@ ProductListViewModel 负责列表页数据流，包括：
 
 ViewModel 不直接操作 UIKit，不调用 tableView.reloadData()，而是通过闭包把数据和状态输出给 VC。
 
-⸻
+---
 
 ProductService
 
@@ -124,7 +124,7 @@ ProductService 负责网络层，包括：
 
 ProductService 不关心页面展示、不关心分页状态、不关心缓存策略，只负责把一次网络请求转换成成功或失败结果。
 
-⸻
+---
 
 CacheHelper
 
@@ -137,7 +137,7 @@ CacheHelper 负责本地缓存读写，包括：
 
 CacheHelper 不知道具体页面，也不直接刷新 UI，只作为缓存工具使用。
 
-⸻
+---
 
 核心请求流程
 
@@ -159,7 +159,7 @@ ViewModel 内部请求流程：
 10. failure 时根据 error + mode + products.isEmpty 判断 UI 反馈
 11. 通过闭包通知 VC 刷新 UI
 
-⸻
+---
 
 LoadMode 与 LoadState
 
@@ -179,7 +179,7 @@ enum LoadMode {
 
 LoadMode 是 VC 传给 ViewModel 的动作。
 
-⸻
+---
 
 LoadState
 
@@ -204,7 +204,7 @@ LoadState 是 ViewModel 内部状态，不暴露给 VC。
 LoadMode：这次要干嘛。
 LoadState：现在正在干嘛。
 
-⸻
+---
 
 请求并发控制
 
@@ -220,7 +220,7 @@ if loadState != .idle {
 
 它解决的是：当前已有请求在进行时，不允许随便再发新的请求。
 
-⸻
+---
 
 currentTask
 
@@ -236,7 +236,7 @@ currentTask = nil
 
 currentTask 管的是请求任务本身。
 
-⸻
+---
 
 requestID
 
@@ -261,7 +261,7 @@ loadState 管能不能发请求。
 currentTask 管能不能取消请求。
 requestID 管回来后有没有资格写数据。
 
-⸻
+---
 
 分页加载策略
 
@@ -283,7 +283,7 @@ case .loadMore:
 
 这样可以避免请求失败后页码提前变化，导致页码错乱。
 
-⸻
+---
 
 缓存策略
 
@@ -304,7 +304,7 @@ case .loadMore:
 
 这样可以避免弱网或断网时页面直接变成空白。
 
-⸻
+---
 
 页面状态管理
 
@@ -330,7 +330,7 @@ empty 是请求成功，但业务数据为空。
 error 是请求失败，并且没有旧数据兜底。
 content 是有数据可展示，即使这次刷新失败，也不应该清空页面。
 
-⸻
+---
 
 Footer 状态管理
 
@@ -350,7 +350,7 @@ enum FooterState {
 
 FooterState 只负责列表底部状态，不负责主页面状态。
 
-⸻
+---
 
 失败处理策略
 
@@ -374,7 +374,7 @@ products.isEmpty：当前有没有旧数据可展示
 不显示 error 空页，不等于不提示失败。
 有旧数据时保留旧数据，但也要给用户失败反馈。
 
-⸻
+---
 
 ProductService 网络错误分类
 
@@ -396,7 +396,7 @@ enum NetworkError: Error {
 * invalidStatusCode(Int)：HTTP 状态码不是 2xx，比如 404、500
 * decodingFailed(Error)：有 data，但 JSON 和 Product 模型对不上
 
-⸻
+---
 
 Service 层 data / empty / error 边界
 
@@ -421,7 +421,7 @@ data nil 不是 empty。
 data nil 是失败。
 success([]) 才是空数据。
 
-⸻
+---
 
 详情页编辑回传
 
@@ -440,7 +440,7 @@ var onSave: ((Product) -> Void)?
 
 这样列表页不需要直接暴露数据修改逻辑，数据更新统一交给 ViewModel。
 
-⸻
+---
 
 Cell 自适应高度
 
@@ -457,7 +457,7 @@ bodyLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -
 
 这样 cell 可以根据 title/body 内容自动撑高，避免长文本显示不全。
 
-⸻
+---
 
 当前项目亮点
 
@@ -471,7 +471,7 @@ bodyLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -
 * 请求失败时根据 mode 和旧数据情况做不同反馈
 * 列表和详情页都处理了长文本显示问题
 
-⸻
+---
 
 ## Screenshots
 
@@ -483,7 +483,7 @@ bodyLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -
 | --- |
 | ![](Screenshots/unit-tests.png) |
 
-⸻
+---
 
 ## 后续优化
 
@@ -511,4 +511,4 @@ bodyLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -
 7. 局部刷新
    当前 onProductsChanged 后 tableView reloadData，后续可以根据 index 做 reloadRows，提高刷新效率。
 
-⸻
+---
