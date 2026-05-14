@@ -14,17 +14,12 @@ final class ProductListViewController: UIViewController {
     private let tableView = UITableView(frame: .zero, style: .plain)
     private let refreshControl = UIRefreshControl()
     
-    /// 首屏加载菊花
-    ///
-    /// 现在是否显示 loading，不再由 VC 自己判断。
-    /// ViewModel 会通过 onViewStateChanged 通知 VC 显示 .loading / .content / .empty / .error。
     private let loadingView: UIActivityIndicatorView = {
         let indicator = UIActivityIndicatorView(style: .large)
         indicator.hidesWhenStopped = true
         return indicator
     }()
     
-    /// 空页面 / 错误页面提示
     private let emptyLabel: UILabel = {
         let label = UILabel()
         label.text = "暂无数据"
@@ -34,17 +29,14 @@ final class ProductListViewController: UIViewController {
         return label
     }()
     
-    /// 上拉加载更多的底部容器
     private let footerView = UIView(frame: CGRect(x: 0, y: 0, width: 0, height: 44))
     
-    /// 底部加载菊花
     private let footerLoadingView: UIActivityIndicatorView = {
         let indicator = UIActivityIndicatorView(style: .medium)
         indicator.hidesWhenStopped = true
         return indicator
     }()
     
-    /// 底部提示文案
     private let footerLabel: UILabel = {
         let label = UILabel()
         label.textAlignment = .center
@@ -55,26 +47,10 @@ final class ProductListViewController: UIViewController {
     
     // MARK: - Data State
     
-    /// 防止 scrollViewDidScroll 在底部触发区内重复触发 loadMore。
-    ///
-    /// false：还没触发，可以触发。
-    /// true：已经触发过了，别重复触发。
-    ///
-    /// 注意：
-    /// 它只管“滚动触发去重”。
-    /// 是否真的允许加载更多，由 viewModel.canLoadMore 判断。
+    /// 只负责滚动触发去重，真正的分页边界由 viewModel.canLoadMore 决定。
     private var isLoadMoreTriggered = false
     
-    /// 页面数据状态管理者
-    ///
-    /// ViewModel 负责：
-    /// - 加载缓存
-    /// - 请求列表
-    /// - 分页状态
-    /// - 请求生命周期
-    /// - requestID 防旧请求
-    /// - 成功后 replace / append
-    /// - 保存缓存
+    /// ViewModel 管理列表数据、分页状态、请求生命周期和缓存，VC 只负责渲染。
     private let viewModel = ProductListViewModel()
     
     // MARK: - Lifecycle
@@ -89,17 +65,12 @@ final class ProductListViewController: UIViewController {
         setupLoadingView()
         bindViewModel()
         
-        /// 进入页面后：
-        /// 1. 先让 ViewModel 读取缓存
-        /// 2. 再让 ViewModel 请求最新第一页
-        ///
-        /// VC 不再直接 loadCache / loadData。
+        /// 先展示缓存兜底，再请求第一页刷新数据。
         viewModel.loadCache()
         viewModel.loadData(mode: .initial)
     }
     
     deinit {
-        /// 页面销毁时，通知 ViewModel 取消当前未完成请求。
         viewModel.cancelCurrentTask()
         print("ProductListViewController deinit，取消未完成请求")
     }
@@ -111,7 +82,6 @@ extension ProductListViewController {
     private func setupTableView() {
         tableView.frame = view.bounds
         
-        /// cell 高度自适应。
         tableView.rowHeight = UITableView.automaticDimension
         tableView.estimatedRowHeight = 120
         
@@ -188,19 +158,14 @@ extension ProductListViewController {
 extension ProductListViewController {
     
     private func bindViewModel() {
-        /// ViewModel 数据源变化后，VC 只负责刷新 tableView。
-        ///
-        /// 数据源已经由 viewModel.products 持有，VC 不再保留 productList 镜像。
         viewModel.onProductsChanged = { [weak self] _ in
             self?.tableView.reloadData()
         }
         
-        /// ViewModel 通知页面主状态变化，VC 负责真正渲染 UI。
         viewModel.onViewStateChanged = { [weak self] state in
             self?.updateViewState(state)
         }
         
-        /// ViewModel 通知底部状态变化，VC 负责真正渲染 footer。
         viewModel.onFooterStateChanged = { [weak self] state in
             self?.updateFooterState(state)
         }
@@ -214,8 +179,6 @@ extension ProductListViewController {
         print("触发下拉刷新")
         isLoadMoreTriggered = false
         
-        /// 下拉刷新动作转发给 ViewModel。
-        /// 是否取消旧请求、是否能发新请求，由 ViewModel 判断。
         viewModel.loadData(mode: .refresh)
     }
     
@@ -328,8 +291,7 @@ extension ProductListViewController: UITableViewDelegate {
         let model = viewModel.products[indexPath.row]
         let detailVC = ProductDetailViewController(product: model)
         
-        /// 详情页保存后，把 newProduct 交给 ViewModel 更新数据源和缓存。
-        /// VC 不再直接改 productList，也不再直接 saveCache。
+        /// 详情页保存后交给 ViewModel 更新数据源和缓存，避免 VC 持有列表镜像。
         detailVC.onSave = { [weak self] newProduct in
             guard let self = self else { return }
             _ = self.viewModel.updateProduct(newProduct)
@@ -343,7 +305,6 @@ extension ProductListViewController: UITableViewDelegate {
 extension ProductListViewController {
     
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
-        /// 是否允许加载更多，由 ViewModel 根据 loadState / hasMoreData 判断。
         guard viewModel.canLoadMore else {
             return
         }

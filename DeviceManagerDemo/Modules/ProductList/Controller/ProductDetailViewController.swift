@@ -35,33 +35,15 @@ final class ProductDetailViewController: UIViewController {
     
     private var product: Product
     
-    /// 保存成功后回传给列表页
     var onSave: ((Product) -> Void)?
     
     // MARK: - UI Components
     
-    /// 滚动容器
-    ///
-    /// 为什么要加 UIScrollView：
-    /// - 详情页 body 内容可能很长
-    /// - 如果页面继续用固定 frame，内容超出屏幕会显示不全
-    /// - 放进 scrollView 后，内容超过屏幕高度时可以上下滚动
     private let scrollView = UIScrollView()
     
-    /// scrollView 内部真正承载内容的容器
-    ///
-    /// 注意：
-    /// scrollView 负责滚动，contentView 负责装 UI。
-    /// 后面所有 label / textField 都加到 contentView 或 stackView 中。
     private let contentView = UIView()
     
-    /// 垂直布局容器
-    ///
-    /// 为什么用 UIStackView：
-    /// - 当前详情页元素是从上到下排列
-    /// - 用 stackView 比手写一堆 y 值更稳
-    /// - label 内容变高时，下面的输入框会自动往下排
-    /// - errorLabel 隐藏时，stackView 会自动收起它占用的空间
+    /// 用 stackView 承载详情和编辑控件，便于错误提示显隐时自动收起空间。
     private let stackView: UIStackView = {
         let stackView = UIStackView()
         stackView.axis = .vertical
@@ -89,12 +71,6 @@ final class ProductDetailViewController: UIViewController {
     
     private let titleTF = UITextField()
     
-    /// 正文输入框
-    ///
-    /// 为什么正文不用 UITextField：
-    /// - UITextField 适合单行输入，比如标题、手机号、搜索词
-    /// - 正文 body 可能很长，UITextField 单行显示体验很差
-    /// - UITextView 支持多行编辑，更适合文章内容、备注、描述类输入
     private let bodyTextView = UITextView()
     
     private let titleErrorLabel = UILabel()
@@ -152,26 +128,17 @@ extension ProductDetailViewController {
         contentView.translatesAutoresizingMaskIntoConstraints = false
         
         NSLayoutConstraint.activate([
-            /// scrollView 贴满当前页面安全区域。
-            /// 这样内容如果超过屏幕高度，就能在安全区域内滚动。
             scrollView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
             scrollView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             scrollView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             scrollView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
             
-            /// contentView 四边绑定到 scrollView 的 contentLayoutGuide。
-            /// contentLayoutGuide 代表 scrollView 内部“可滚动内容区域”。
             contentView.topAnchor.constraint(equalTo: scrollView.contentLayoutGuide.topAnchor),
             contentView.leadingAnchor.constraint(equalTo: scrollView.contentLayoutGuide.leadingAnchor),
             contentView.trailingAnchor.constraint(equalTo: scrollView.contentLayoutGuide.trailingAnchor),
             contentView.bottomAnchor.constraint(equalTo: scrollView.contentLayoutGuide.bottomAnchor),
             
-            /// contentView 宽度等于 scrollView 的可见宽度。
-            ///
-            /// 这条很关键：
-            /// - 没有这条，Auto Layout 不知道内容区应该多宽
-            /// - label 也就不知道按多宽换行
-            /// - bodyLabel 的多行高度就可能算不准
+            /// 固定 contentView 宽度，避免多行文本高度计算不稳定。
             contentView.widthAnchor.constraint(equalTo: scrollView.frameLayoutGuide.widthAnchor)
         ])
     }
@@ -181,24 +148,14 @@ extension ProductDetailViewController {
         stackView.translatesAutoresizingMaskIntoConstraints = false
         
         NSLayoutConstraint.activate([
-            /// stackView 顶部距离 contentView 顶部 20
             stackView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 20),
-            
-            /// 左右各留 20 的边距
             stackView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
             stackView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
             
-            /// stackView 底部连到 contentView 底部
-            ///
-            /// 这条很重要：
-            /// scrollView 需要知道内容到底到哪里结束，才能计算可滚动高度。
+            /// 让 scrollView 能根据内容计算可滚动高度。
             stackView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -30)
         ])
         
-        /// 从上到下加入页面元素。
-        ///
-        /// 顺序决定页面显示顺序：
-        /// 标题展示 -> 内容展示 -> 标题输入 -> 标题错误 -> 内容输入 -> 内容错误
         stackView.addArrangedSubview(titleLabel)
         stackView.addArrangedSubview(bodyLabel)
         stackView.addArrangedSubview(titleTF)
@@ -206,28 +163,12 @@ extension ProductDetailViewController {
         stackView.addArrangedSubview(bodyTextView)
         stackView.addArrangedSubview(bodyErrorLabel)
         
-        /// label 设置“最小高度”。
-        ///
-        /// 注意：这里不要用 equalToConstant 写死高度。
-        /// 如果写成 equalToConstant，label 高度就固定死了，长文本又会显示不全。
-        ///
-        /// greaterThanOrEqualToConstant 的意思是：
-        /// - 内容少时，至少保持这个高度，页面不会太扁
-        /// - 内容多时，可以继续自动撑高，不会被裁剪
         titleLabel.heightAnchor.constraint(greaterThanOrEqualToConstant: 30).isActive = true
         bodyLabel.heightAnchor.constraint(greaterThanOrEqualToConstant: 80).isActive = true
 
         
-        /// 输入框固定高度 44。
-        /// label 不固定高度，让它们根据文字内容自动撑开。
         titleTF.heightAnchor.constraint(equalToConstant: 44).isActive = true
         
-        /// 正文输入区域使用 UITextView，给一个较大的最小高度。
-        ///
-        /// 注意这里也不要写成固定高度。
-        /// greaterThanOrEqualToConstant 表示：
-        /// - 内容少时，至少有 120 高度，方便输入
-        /// - 内容多时，后面可以继续升级为自适应高度
         bodyTextView.heightAnchor.constraint(greaterThanOrEqualToConstant: 120).isActive = true
     }
     
@@ -430,8 +371,6 @@ extension ProductDetailViewController: UITextViewDelegate {
     func textViewDidChange(_ textView: UITextView) {
         guard textView === bodyTextView else { return }
         
-        /// bodyTextView 是多行输入控件。
-        /// 输入内容变化时，同步更新上方 bodyLabel 的展示文案。
         bodyLabel.text = "内容：\(bodyTextView.text ?? "")"
         
         updateBodyValidationUI()
