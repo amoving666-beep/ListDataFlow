@@ -129,6 +129,7 @@ enum NetworkError: Error {
     /// 它代表“网络已经成功拿到数据，但 Swift Model 解析失败”。
     case decodingFailed(Error)
     
+    // 没有数据 不是返回为空。是没有数据
     
     case noData
 }

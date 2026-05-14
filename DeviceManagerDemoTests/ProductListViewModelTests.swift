@@ -1,5 +1,6 @@
 import XCTest
 @testable import DeviceManagerDemo
+
 final class ProductListViewModelTests: XCTestCase {
 
     // MARK: - Initial
@@ -331,6 +332,71 @@ final class ProductListViewModelTests: XCTestCase {
     }
     
     // MARK: - Update Product
+
+    func testUpdateProductSuccess_updatesMatchedProduct() {
+        let mockService = MockProductService()
+        let viewModel = makeViewModel(service: mockService)
+
+        let oldProducts = [
+            makeProduct(id: 1, title: "旧标题1", body: "旧内容1"),
+            makeProduct(id: 2, title: "旧标题2", body: "旧内容2")
+        ]
+
+        mockService.result = .success(oldProducts)
+        viewModel.loadData(mode: .initial)
+        let newProduct = makeProduct(id: 2, title: "新标题2", body: "新内容2")
+
+        var didCallOnProductsChanged = false
+        var callbackProducts: [Product] = []
+        viewModel.onProductsChanged = { products in
+            didCallOnProductsChanged = true
+            callbackProducts = products
+        }
+        let updatedIndex = viewModel.updateProduct(newProduct)
+        XCTAssertEqual(updatedIndex, 1, "id = 2 的 Product 在数组里的 index 应该是 1")
+        XCTAssertEqual(viewModel.products.count, 2, "updateProduct 成功后 products 数量不应该变化")
+        XCTAssertEqual(viewModel.products[1].id, 2, "被更新的 Product id 应该仍然是 2")
+        XCTAssertEqual(viewModel.products[1].title, "新标题2", "目标 Product 的 title 应该被更新")
+        XCTAssertEqual(viewModel.products[1].body, "新内容2", "目标 Product 的 body 应该被更新")
+        XCTAssertEqual(viewModel.products[0].id, 1, "非目标 Product 的 id 不应该变化")
+        XCTAssertEqual(viewModel.products[0].title, "旧标题1", "非目标 Product 的 title 不应该变化")
+        XCTAssertEqual(viewModel.products[0].body, "旧内容1", "非目标 Product 的 body 不应该变化")
+        XCTAssertTrue(didCallOnProductsChanged, "updateProduct 成功后应该触发 onProductsChanged")
+        XCTAssertEqual(callbackProducts.count, 2, "onProductsChanged 回调里的 products 数量应该仍然是 2")
+        XCTAssertEqual(callbackProducts[1].title, "新标题2", "onProductsChanged 回调里的目标 Product title 应该是新值")
+        XCTAssertEqual(callbackProducts[1].body, "新内容2", "onProductsChanged 回调里的目标 Product body 应该是新值")
+    }
+    func testUpdateProductNotFound_returnsNil() {
+        let mockService = MockProductService()
+        let viewModel = makeViewModel(service: mockService)
+
+        let oldProducts = [
+            makeProduct(id: 1, title: "旧标题1", body: "旧内容1"),
+            makeProduct(id: 2, title: "旧标题2", body: "旧内容2")
+        ]
+
+        mockService.result = .success(oldProducts)
+        viewModel.loadData(mode: .initial)
+        let notFoundProduct = makeProduct(id: 999, title: "不存在标题", body: "不存在内容")
+
+        var didCallOnProductsChanged = false
+        viewModel.onProductsChanged = { _ in
+            didCallOnProductsChanged = true
+        }
+        let updatedIndex = viewModel.updateProduct(notFoundProduct)
+        XCTAssertNil(updatedIndex, "找不到目标 id 时，updateProduct 应该返回 nil")
+        XCTAssertEqual(viewModel.products.count, 2, "updateProduct 找不到目标时，不应该改变 products 数量")
+        XCTAssertEqual(viewModel.products[0].id, 1, "找不到目标时，第一条旧数据 id 不应该变化")
+        XCTAssertEqual(viewModel.products[0].title, "旧标题1", "找不到目标时，第一条旧数据 title 不应该变化")
+        XCTAssertEqual(viewModel.products[0].body, "旧内容1", "找不到目标时，第一条旧数据 body 不应该变化")
+        XCTAssertEqual(viewModel.products[1].id, 2, "找不到目标时，第二条旧数据 id 不应该变化")
+        XCTAssertEqual(viewModel.products[1].title, "旧标题2", "找不到目标时，第二条旧数据 title 不应该变化")
+        XCTAssertEqual(viewModel.products[1].body, "旧内容2", "找不到目标时，第二条旧数据 body 不应该变化")
+        XCTAssertFalse(viewModel.products.contains(where: { $0.id == 999 }), "找不到目标时，不应该把 id = 999 插入 products")
+        XCTAssertFalse(didCallOnProductsChanged, "updateProduct 找不到目标时，不应该触发 onProductsChanged")
+    }
+
+    // MARK: - Helpers
     private func makeProduct(
         userId: Int = 1,
         id: Int,
