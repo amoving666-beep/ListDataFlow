@@ -8,7 +8,9 @@
 import Foundation
 
 enum CacheHelper {
-
+    
+    //保存缓存
+    
     static func save<T: Codable>(_ value: T, key: String) {
         do {
             let data = try JSONEncoder().encode(value)
@@ -17,7 +19,7 @@ enum CacheHelper {
             print("缓存保存失败：\(error.localizedDescription)")
         }
     }
-
+    //加载缓存
     static func load<T: Codable>(key: String, as type: T.Type) -> T? {
         guard let data = UserDefaults.standard.data(forKey: key) else {
             return nil
@@ -29,7 +31,7 @@ enum CacheHelper {
             return nil
         }
     }
-
+    // 清除缓存
     static func clear(key: String) {
         UserDefaults.standard.removeObject(forKey: key)
 

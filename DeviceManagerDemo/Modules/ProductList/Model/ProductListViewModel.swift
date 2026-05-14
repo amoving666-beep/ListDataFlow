@@ -5,34 +5,34 @@ final class ProductListViewModel {
     // MARK: - Types
 
     enum ViewState {
-        case loading
-        case content
-        case empty(String)
-        case error(String)
+        case loading/// 首屏加载中
+        case content/// 有内容，正常展示 tableView
+        case empty(String)/// 请求成功但没数据，或者当前列表为空
+        case error(String) /// 请求失败且当前没有旧数据可展示
     }
 
-    /// FooterState 只管底部加载区，不表达主页面状态。
-    enum FooterState {
-        case hidden
+    enum FooterState { /// 注意：FooterState 只管底部，不管主页面。
+        case hidden/// 不显示底部
         case loadingMore
         case noMoreData
     }
 
-    enum LoadMode {
-        case initial
-        case refresh
-        case loadMore
+    enum LoadMode {/// LoadMode 表示：这一次请求“要做什么动作”。
+        case initial/// 首次进入页面，请求第 1 页
+        case refresh/// 用户下拉刷新，请求第 1 页
+        case loadMore/// 用户上拉加载更多，请求下一页
     }
 
-    private enum LoadState {
-        case idle
-        case initialLoading
-        case refreshing
-        case loadingMore
+    private enum LoadState {/// LoadState 表示：当前页面“正在处于什么请求状态”。
+        case idle /// 当前没有任何列表请求在进行，可以发起新请求
+        case initialLoading/// 当前正在首次加载
+        case refreshing/// 当前正在下拉刷新
+        case loadingMore/// 当前正在上拉加载更多
     }
 
     // MARK: - State
 
+    /// 外部可以读 products，但只能 ViewModel 自己改 products
     private(set) var products: [Product] = []
 
     private var currentPage: Int = 1
@@ -43,26 +43,39 @@ final class ProductListViewModel {
     private var hasMoreData: Bool = true
     private let cacheKey = "ProductListCacheKey"
 
-    /// ViewModel 依赖协议而不是具体网络实现，便于测试注入 Mock。
+    /// 网络请求服务
+    ///
+    /// ViewModel 不直接写死 ProductService，
+    /// 而是通过 ProductServiceProtocol 接收一个 service。
+    ///
+    /// 默认值是 ProductService()，所以正式运行时不用额外传。
+    /// 后续测试时，可以传 MockProductService。
     private let service: ProductServiceProtocol
     
+    /// 初始化 ViewModel
+    ///
+    /// - Parameter service: 请求服务，默认使用真实的 ProductService
     init(service: ProductServiceProtocol = ProductService()) {
 
         self.service = service
 
     }
     
-    /// 暴露给 VC 的分页边界，避免滚动层直接依赖内部状态机。
+    /// 给 VC 的 scrollViewDidScroll 用。
+    /// VC 不需要知道 loadState / hasMoreData 的细节，只问一句：现在能不能加载更多。
     var canLoadMore: Bool {
         return loadState == .idle && hasMoreData
     }
 
     // MARK: - Outputs
 
+    /// products 变化时通知 VC 刷新 tableView 数据源
     var onProductsChanged: (([Product]) -> Void)?
 
+    /// 主页面状态变化时通知 VC 渲染 loading / content / empty / error
     var onViewStateChanged: ((ViewState) -> Void)?
 
+    /// 底部状态变化时通知 VC 渲染 footer
     var onFooterStateChanged: ((FooterState) -> Void)?
 
     // MARK: - Public Methods
@@ -103,6 +116,8 @@ final class ProductListViewModel {
     }
 
     func loadData(mode: LoadMode) {
+        /// 下拉刷新代表用户想要最新的第一页数据。
+        /// 如果旧请求还在飞，先取消旧请求，再允许新的刷新请求发出去。
         prepareForNewRequestIfNeeded(mode: mode)
         
         guard canLoadData(mode: mode) else {
@@ -113,7 +128,8 @@ final class ProductListViewModel {
 
         let targetPage = makeTargetPage(mode: mode)
 
-        /// requestID 用于防止旧请求回调覆盖新请求结果。
+        /// 发请求前生成本次请求的编号。
+        /// 回调回来时要先比较 requestID，防止旧请求污染新数据。
         currentRequestID += 1
         let requestID = currentRequestID
 
@@ -139,7 +155,17 @@ final class ProductListViewModel {
     }
 
     private func prepareForNewRequestIfNeeded(mode: LoadMode) {
-        /// refresh 代表用户主动拉取第一页，可以取消旧请求；loadMore 是分页追加，必须串行处理。
+        /// 目前只有 refresh 需要在新请求前做特殊准备。
+        ///
+        /// 原因：
+        /// - refresh 代表用户想要最新第一页
+        /// - 如果旧请求还在飞，旧请求结果已经不重要
+        /// - 所以可以 cancel 旧请求，再重新发起 refresh
+        ///
+        /// loadMore 不走这里：
+        /// - loadMore 是分页追加
+        /// - 应该串行加载
+        /// - 不应该随便取消旧 loadMore
         guard mode == .refresh, loadState != .idle else {
             return
         }
@@ -152,6 +178,7 @@ final class ProductListViewModel {
         print("下拉刷新触发：取消旧请求，准备重新请求第一页")
     }
     
+    /// 详情页回传后，用 id 更新 ViewModel 内部的数据源和缓存。
     @discardableResult
     func updateProduct(_ newProduct: Product) -> Int? {
         guard let index = products.firstIndex(where: { $0.id == newProduct.id }) else {
@@ -288,3 +315,23 @@ final class ProductListViewModel {
         return hasMoreData ? .hidden : .noMoreData
     }
 }
+
+/*
+prepareForNewRequestIfNeeded：
+请求前准备；refresh 时取消旧请求；不发请求。
+
+canLoadData：
+只判断能不能请求；不改状态、不取消、不发请求。
+
+beginLoading：
+进入请求状态；设置 loadState；必要时通知 loading/footer loading。
+
+makeTargetPage：
+只计算目标页码；不修改 currentPage。
+
+finishLoading：
+请求结束收尾；loadState 回 idle；更新 footer；不处理数据。
+
+handleLoadSuccess：
+成功后处理数据；refresh 替换、loadMore 追加；更新页码、hasMoreData、缓存，并通知 VC。
+*/
