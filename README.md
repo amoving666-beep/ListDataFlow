@@ -460,6 +460,17 @@ bodyLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -
 ⸻
 
 当前项目亮点
+## Screenshots
+
+> 后续补充项目运行截图，包括列表页、详情页、空状态、错误状态和单元测试结果。
+
+| 列表页 | 详情页 |
+| --- | --- |
+| 待补充 | 待补充 |
+
+| 空状态 / 错误状态 | 单元测试 |
+| --- | --- |
+| 待补充 | 待补充 |
 
 * 不是简单 UITableView，而是完整列表数据流闭环
 * ViewModel 接管分页、缓存、请求生命周期和失败分支
@@ -483,10 +494,11 @@ bodyLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -
     目前 data == nil 暂时归到 invalidResponse，后续可以单独定义 emptyData，让错误语义更清晰。
 3. 改进分页判断
     当前 hasMoreData 使用 list.count == pageSize 推测是否还有更多，后续可以改用服务端返回的 totalPage、totalCount 或 hasMore 字段。
-4. 增加单元测试
-    可以针对 ProductListViewModel 测试 initial / refresh / loadMore 成功失败分支。
-5. 引入依赖注入
-    当前 ViewModel 直接调用 ProductService，后续可以通过协议注入 Service，方便 Mock 请求成功、失败、延迟等场景。
+4. 增加更多 ViewModel 单元测试
+    当前已通过 ProductServiceProtocol 注入 Mock 服务，对 ProductListViewModel 的部分加载流程进行测试。后续可以继续补充 refresh / loadMore /
+    requestID 防旧请求污染 / cancel 请求等分支测试。
+5. 增加图片加载
+    可以为 ProductCell 增加图片字段，练习异步图片加载、占位图、缓存和 cell 复用错图处理。
 6. 增加图片加载
     可以为 ProductCell 增加图片字段，练习异步图片加载、占位图、缓存和 cell 复用错图处理。
 7. 缓存升级
