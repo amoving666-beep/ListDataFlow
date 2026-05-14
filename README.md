@@ -460,17 +460,6 @@ bodyLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -
 ⸻
 
 当前项目亮点
-## Screenshots
-
-> 后续补充项目运行截图，包括列表页、详情页、空状态、错误状态和单元测试结果。
-
-| 列表页 | 详情页 |
-| --- | --- |
-| 待补充 | 待补充 |
-
-| 空状态 / 错误状态 | 单元测试 |
-| --- | --- |
-| 待补充 | 待补充 |
 
 * 不是简单 UITableView，而是完整列表数据流闭环
 * ViewModel 接管分页、缓存、请求生命周期和失败分支
@@ -484,28 +473,44 @@ bodyLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -
 
 ⸻
 
-后续优化
+## Screenshots
+
+> 后续补充项目运行截图，包括列表页、详情页、空状态、错误状态和单元测试结果。
+
+| 列表页 | 详情页 |
+| --- | --- |
+| 待补充 | 待补充 |
+
+| 空状态 / 错误状态 | 单元测试 |
+| --- | --- |
+| 待补充 | 待补充 |
+
+⸻
+
+## 后续优化
 
 当前项目仍有以下可继续优化的方向：
 
 1. 增加 Toast 组件
-    当前失败提示可以继续升级成统一 Toast，而不是简单提示。
+   当前失败提示可以继续升级成统一 Toast，而不是简单提示。
+
 2. 增加 emptyData 错误类型
-    目前 data == nil 暂时归到 invalidResponse，后续可以单独定义 emptyData，让错误语义更清晰。
+   目前 data == nil 暂时归到 invalidResponse，后续可以单独定义 emptyData，让错误语义更清晰。
+
 3. 改进分页判断
-    当前 hasMoreData 使用 list.count == pageSize 推测是否还有更多，后续可以改用服务端返回的 totalPage、totalCount 或 hasMore 字段。
+   当前 hasMoreData 使用 list.count == pageSize 推测是否还有更多，后续可以改用服务端返回的 totalPage、totalCount 或 hasMore 字段。
+
 4. 增加更多 ViewModel 单元测试
-    当前已通过 ProductServiceProtocol 注入 Mock 服务，对 ProductListViewModel 的部分加载流程进行测试。后续可以继续补充 refresh / loadMore /
-    requestID 防旧请求污染 / cancel 请求等分支测试。
+   当前已通过 ProductServiceProtocol 注入 Mock 服务，对 ProductListViewModel 的部分加载流程进行测试。
+   后续可以继续补充 refresh / loadMore / requestID 防旧请求污染 / cancel 请求等分支测试。
+
 5. 增加图片加载
-    可以为 ProductCell 增加图片字段，练习异步图片加载、占位图、缓存和 cell 复用错图处理。
-6. 增加图片加载
-    可以为 ProductCell 增加图片字段，练习异步图片加载、占位图、缓存和 cell 复用错图处理。
-7. 缓存升级
-    当前使用 UserDefaults 保存轻量缓存，后续可以根据数据量升级到 FileManager 或 CoreData。
-8. 局部刷新
-    当前 onProductsChanged 后 tableView reloadData，后续可以根据 index 做 reloadRows，提高刷新效率。
-9. 增加 README 截图和演示 GIF
-    后续可以补充项目运行截图、列表页截图、详情页截图和操作录屏。
+   可以为 ProductCell 增加图片字段，练习异步图片加载、占位图、缓存和 cell 复用错图处理。
+
+6. 缓存升级
+   当前使用 UserDefaults 保存轻量缓存，后续可以根据数据量升级到 FileManager 或 CoreData。
+
+7. 局部刷新
+   当前 onProductsChanged 后 tableView reloadData，后续可以根据 index 做 reloadRows，提高刷新效率。
 
 ⸻
