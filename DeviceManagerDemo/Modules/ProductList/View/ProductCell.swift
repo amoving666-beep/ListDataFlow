@@ -16,7 +16,7 @@ final class ProductCell: UITableViewCell {
         label.font = .boldSystemFont(ofSize: 18)
         label.textColor = .black
         label.numberOfLines = 0
-        label.backgroundColor = .systemRed
+        label.backgroundColor = .systemBackground
         return label
     }()
     
@@ -25,7 +25,7 @@ final class ProductCell: UITableViewCell {
         label.font = .systemFont(ofSize: 14)
         label.textColor = .darkGray
         label.numberOfLines = 0
-        label.backgroundColor = .yellow
+        label.backgroundColor = .secondarySystemBackground
         return label
     }()
     

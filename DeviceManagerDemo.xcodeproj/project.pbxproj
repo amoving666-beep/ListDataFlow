@@ -62,6 +62,9 @@
 		2B462D202F9111E200B19AFA /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
 		2B7D654A2FA7416700C9D900 /* ProductListViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProductListViewModel.swift; sourceTree = "<group>"; };
 		2BC976442FA102C3000D94EE /* NetworkError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkError.swift; sourceTree = "<group>"; };
+		2BD85EC52FB61D01001E4DF8 /* list-page.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "list-page.png"; sourceTree = "<group>"; };
+		2BD85EC62FB61D0B001E4DF8 /* detail-page.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "detail-page.png"; sourceTree = "<group>"; };
+		2BD85EC72FB61D11001E4DF8 /* unit-tests.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "unit-tests.png"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -170,6 +173,7 @@
 			children = (
 				2B403BE12FAB9D5700C84332 /* DeviceManagerDemo.xctestplan */,
 				2B462D212F9111E200B19AFA /* DeviceManagerDemo */,
+				2BD85EC42FB61C56001E4DF8 /* Screenshots */,
 				2B403BCF2FAB807F00C84332 /* DeviceManagerDemoTests */,
 				2B462CF52F910DD900B19AFA /* Products */,
 			);
@@ -198,6 +202,16 @@
 				2B462D202F9111E200B19AFA /* ViewController.swift */,
 			);
 			path = DeviceManagerDemo;
+			sourceTree = "<group>";
+		};
+		2BD85EC42FB61C56001E4DF8 /* Screenshots */ = {
+			isa = PBXGroup;
+			children = (
+				2BD85EC52FB61D01001E4DF8 /* list-page.png */,
+				2BD85EC62FB61D0B001E4DF8 /* detail-page.png */,
+				2BD85EC72FB61D11001E4DF8 /* unit-tests.png */,
+			);
+			path = Screenshots;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */

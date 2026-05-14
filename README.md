@@ -475,15 +475,13 @@ bodyLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -
 
 ## Screenshots
 
-> 后续补充项目运行截图，包括列表页、详情页、空状态、错误状态和单元测试结果。
-
 | 列表页 | 详情页 |
 | --- | --- |
-| 待补充 | 待补充 |
+| ![](Screenshots/list-page.png) | ![](Screenshots/detail-page.png) |
 
-| 空状态 / 错误状态 | 单元测试 |
-| --- | --- |
-| 待补充 | 待补充 |
+| 单元测试 |
+| --- |
+| ![](Screenshots/unit-tests.png) |
 
 ⸻
 
