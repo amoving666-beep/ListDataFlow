@@ -11,6 +11,7 @@ final class ProductService: ProductServiceProtocol {
     
     @discardableResult
     func fetchList(page: Int, pageSize: Int, completion: @escaping (Result<[Product], NetworkError>) -> Void) -> URLSessionDataTask? {
+        
         guard let url = URL(string: "https://jsonplaceholder.typicode.com/posts?_page=\(page)&_limit=\(pageSize)") else {
             DispatchQueue.main.async {
                 completion(.failure(NetworkError.invalidURL))
