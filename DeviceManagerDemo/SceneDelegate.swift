@@ -30,7 +30,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         }
         
         //创建你的列表页。
-        let rootVC = ProductListViewController()
+        let rootVC = HomeViewController()
         
         //创建导航控制器，并把列表页作为导航栈第一个页面。
         let nav = UINavigationController(rootViewController: rootVC)

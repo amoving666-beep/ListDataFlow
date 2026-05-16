@@ -14,7 +14,7 @@ protocol ProductRepositoryProtocol {
         page: Int,
         pageSize: Int,
         completion: @escaping (Result<[Product], NetworkError>) -> Void
-    ) ->URLSessionTask?
+    ) -> URLSessionTask?
     
     func loadCachedProducts() -> [Product]?
     
