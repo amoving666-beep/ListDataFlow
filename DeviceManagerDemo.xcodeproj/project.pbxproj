@@ -26,6 +26,8 @@
 		2B462D2C2F9111E200B19AFA /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2B462D1E2F9111E200B19AFA /* Main.storyboard */; };
 		2B7D654B2FA7416700C9D900 /* ProductListViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B7D654A2FA7416700C9D900 /* ProductListViewModel.swift */; };
 		2BC976452FA102C3000D94EE /* NetworkError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2BC976442FA102C3000D94EE /* NetworkError.swift */; };
+		2BE47F8D2FB7566800226DDB /* ProductRepositoryProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2BE47F8C2FB7566800226DDB /* ProductRepositoryProtocol.swift */; };
+		2BE47F8F2FB7568300226DDB /* ProductRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2BE47F8E2FB7568300226DDB /* ProductRepository.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -65,6 +67,8 @@
 		2BD85EC52FB61D01001E4DF8 /* list-page.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "list-page.png"; sourceTree = "<group>"; };
 		2BD85EC62FB61D0B001E4DF8 /* detail-page.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "detail-page.png"; sourceTree = "<group>"; };
 		2BD85EC72FB61D11001E4DF8 /* unit-tests.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "unit-tests.png"; sourceTree = "<group>"; };
+		2BE47F8C2FB7566800226DDB /* ProductRepositoryProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProductRepositoryProtocol.swift; sourceTree = "<group>"; };
+		2BE47F8E2FB7568300226DDB /* ProductRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProductRepository.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -147,6 +151,8 @@
 				2BC976442FA102C3000D94EE /* NetworkError.swift */,
 				2B260D052F94F48B00F95950 /* ProductService.swift */,
 				2B403BC82FAB649D00C84332 /* ProductServiceProtocol.swift */,
+				2BE47F8C2FB7566800226DDB /* ProductRepositoryProtocol.swift */,
+				2BE47F8E2FB7568300226DDB /* ProductRepository.swift */,
 			);
 			path = Service;
 			sourceTree = "<group>";
@@ -337,9 +343,11 @@
 				2B462D232F9111E200B19AFA /* DeviceCell.swift in Sources */,
 				2B462D242F9111E200B19AFA /* DeviceDetailViewController.swift in Sources */,
 				2B462D252F9111E200B19AFA /* DeviceListViewController.swift in Sources */,
+				2BE47F8D2FB7566800226DDB /* ProductRepositoryProtocol.swift in Sources */,
 				2B462D262F9111E200B19AFA /* DeviceRowData.swift in Sources */,
 				2B0DAB982F9F920A00C9BD5A /* CacheHelper.swift in Sources */,
 				2B260D042F94F17900F95950 /* ProductDetailViewController.swift in Sources */,
+				2BE47F8F2FB7568300226DDB /* ProductRepository.swift in Sources */,
 				2B260D062F94F48B00F95950 /* ProductService.swift in Sources */,
 				2B403BC92FAB649D00C84332 /* ProductServiceProtocol.swift in Sources */,
 				2B7D654B2FA7416700C9D900 /* ProductListViewModel.swift in Sources */,

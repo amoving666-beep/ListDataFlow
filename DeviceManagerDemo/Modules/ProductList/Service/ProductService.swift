@@ -52,7 +52,7 @@ final class ProductService: ProductServiceProtocol {
             do {
                 let list = try JSONDecoder().decode([Product].self, from: data)
                 
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                DispatchQueue.main.async {
                     completion(.success(list))
                 }
             } catch {
