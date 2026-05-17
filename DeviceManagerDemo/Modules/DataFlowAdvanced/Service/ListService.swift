@@ -16,15 +16,9 @@ import Foundation
 final class ListService: ListServiceProtocol {
     
     private let networkClient: NetworkClientProtocol
-    private let decoder: JSONDecoder
     
-    init(
-        
-        networkClient: NetworkClientProtocol = URLSessionNetworkClient(),
-        decoder: JSONDecoder = JSONDecoder()
-    ) {
+    init(networkClient: NetworkClientProtocol = URLSessionNetworkClient()) {
         self.networkClient = networkClient
-        self.decoder = decoder
     }
     
     @discardableResult
@@ -33,15 +27,20 @@ final class ListService: ListServiceProtocol {
         pageSize: Int,
         completion: @escaping (Result<[ListItem], DataFlowNetworkError>) -> Void
     ) -> URLSessionTask? {
-        let endpoint = Endpoint.posts(page: page, pageSize: pageSize)
+        let endpoint = Endpoint.get(
+            "https://jsonplaceholder.typicode.com/posts",
+            queryItems: [
+                URLQueryItem(name: "_page", value: "\(page)"),
+                URLQueryItem(name: "_limit", value: "\(pageSize)")
+            ]
+        )
         
-        return networkClient.request(endpoint: endpoint) { [weak self] result in
-            guard let self = self else { return }
-            
-            switch result {
-            case .success(let data):
-                do {
-                    let responses = try self.decoder.decode([PostResponse].self, from: data)
+        let task = networkClient.request(
+            endpoint: endpoint,
+            responseType: [PostResponse].self,
+            completion: { result in
+                switch result {
+                case .success(let responses):
                     let items = responses.map { response in
                         ListItem(
                             id: response.id,
@@ -50,14 +49,14 @@ final class ListService: ListServiceProtocol {
                         )
                     }
                     completion(.success(items))
-                } catch {
-                    completion(.failure(.decodingFailed(error)))
+                    
+                case .failure(let error):
+                    completion(.failure(error))
                 }
-                
-            case .failure(let error):
-                completion(.failure(error))
             }
-        }
+        )
+        
+        return task
     }
 }
 

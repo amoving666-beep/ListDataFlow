@@ -39,16 +39,26 @@ final class ListRepository: ListRepositoryProtocol {
         pageSize: Int,
         completion: @escaping (Result<[ListItem], DataFlowNetworkError>) -> Void
     ) -> URLSessionTask? {
-        return service.fetchList(page: page, pageSize: pageSize) { [weak self] result in
-            switch result {
-            case .success(let items):
-                self?.cacheStore.save(items, forKey: self?.cacheKey ?? "DataFlowAdvanced.ListItems")
-                completion(.success(items))
+
+        let task = service.fetchList(
+            page: page,
+            pageSize: pageSize,
+            completion: { [weak self] result in
                 
-            case .failure(let error):
-                completion(.failure(error))
+                guard let self = self else { return }
+                
+                switch result {
+                case .success(let items):
+                    self.cacheStore.save(items, forKey: self.cacheKey)
+                    completion(.success(items))
+                    
+                case .failure(let error):
+                    completion(.failure(error))
+                }
             }
-        }
+        )
+        
+        return task
     }
     
     func loadCachedList() -> [ListItem]? {

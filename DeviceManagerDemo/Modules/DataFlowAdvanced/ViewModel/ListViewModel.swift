@@ -89,6 +89,7 @@ final class ListViewModel {
     ///
     /// - Parameter mode: 请求意图，区分首次加载、下拉刷新、上拉加载更多。
     func loadData(mode: LoadMode) {
+       
         guard canStartLoading(mode: mode) else { return }
         
         let targetPage = makeTargetPage(mode: mode)
@@ -98,6 +99,7 @@ final class ListViewModel {
         let requestID = currentRequestID
         
         currentTask = repository.fetchList(page: targetPage, pageSize: pageSize) { [weak self] result in
+            
             guard let self = self else { return }
             
             guard requestID == self.currentRequestID else {
