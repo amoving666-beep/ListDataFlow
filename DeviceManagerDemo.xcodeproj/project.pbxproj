@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		2B0DAB952F9F88AE00C9BD5A /* ProductCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B0DAB942F9F88AE00C9BD5A /* ProductCell.swift */; };
 		2B0DAB982F9F920A00C9BD5A /* CacheHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B0DAB972F9F920A00C9BD5A /* CacheHelper.swift */; };
+		2B1B6C9D2FBC9A24005AA128 /* HomeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B1B6C9C2FBC9A24005AA128 /* HomeViewController.swift */; };
 		2B260CFE2F94F14A00F95950 /* Product.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B260CFD2F94F14A00F95950 /* Product.swift */; };
 		2B260D022F94F16E00F95950 /* ProductListViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B260D012F94F16E00F95950 /* ProductListViewController.swift */; };
 		2B260D042F94F17900F95950 /* ProductDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B260D032F94F17900F95950 /* ProductDetailViewController.swift */; };
@@ -41,6 +42,7 @@
 /* Begin PBXFileReference section */
 		2B0DAB942F9F88AE00C9BD5A /* ProductCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProductCell.swift; sourceTree = "<group>"; };
 		2B0DAB972F9F920A00C9BD5A /* CacheHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CacheHelper.swift; sourceTree = "<group>"; };
+		2B1B6C9C2FBC9A24005AA128 /* HomeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeViewController.swift; sourceTree = "<group>"; };
 		2B260CFD2F94F14A00F95950 /* Product.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Product.swift; sourceTree = "<group>"; };
 		2B260D012F94F16E00F95950 /* ProductListViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProductListViewController.swift; sourceTree = "<group>"; };
 		2B260D032F94F17900F95950 /* ProductDetailViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProductDetailViewController.swift; sourceTree = "<group>"; };
@@ -193,6 +195,7 @@
 			children = (
 				2B462D142F9111E200B19AFA /* AppDelegate.swift */,
 				2B462D1F2F9111E200B19AFA /* SceneDelegate.swift */,
+				2B1B6C9C2FBC9A24005AA128 /* HomeViewController.swift */,
 				2B462D152F9111E200B19AFA /* Assets.xcassets */,
 				2B260D072F94F4C200F95950 /* Modules */,
 				2B260CFB2F94F0FE00F95950 /* Device */,
@@ -333,6 +336,7 @@
 				2B462D222F9111E200B19AFA /* AppDelegate.swift in Sources */,
 				2BC976452FA102C3000D94EE /* NetworkError.swift in Sources */,
 				2B260CFE2F94F14A00F95950 /* Product.swift in Sources */,
+				2B1B6C9D2FBC9A24005AA128 /* HomeViewController.swift in Sources */,
 				2B260D022F94F16E00F95950 /* ProductListViewController.swift in Sources */,
 				2B462D232F9111E200B19AFA /* DeviceCell.swift in Sources */,
 				2B462D242F9111E200B19AFA /* DeviceDetailViewController.swift in Sources */,
@@ -426,6 +430,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = E7Y6FDL9VX;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = DeviceManagerDemo/Info.plist;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -456,6 +461,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = E7Y6FDL9VX;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = DeviceManagerDemo/Info.plist;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
