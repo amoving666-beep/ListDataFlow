@@ -14,16 +14,16 @@ final class ProductCell: UITableViewCell {
     private let titleLabel: UILabel = {
         let label = UILabel()
         label.font = .boldSystemFont(ofSize: 18)
-        label.textColor = .black
+        label.textColor = .label
         label.numberOfLines = 0
-        label.backgroundColor = .systemBackground
+        label.backgroundColor = .clear
         return label
     }()
     
     private let bodyLabel: UILabel = {
         let label = UILabel()
         label.font = .systemFont(ofSize: 14)
-        label.textColor = .darkGray
+        label.textColor = .secondaryLabel
         label.numberOfLines = 0
         label.backgroundColor = .secondarySystemBackground
         return label

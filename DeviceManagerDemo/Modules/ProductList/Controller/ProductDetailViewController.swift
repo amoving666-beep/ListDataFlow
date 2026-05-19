@@ -56,7 +56,7 @@ final class ProductDetailViewController: UIViewController {
     private let titleLabel: UILabel = {
         let label = UILabel()
         label.font = .boldSystemFont(ofSize: 20)
-        label.textColor = .black
+        label.textColor = .label
         label.numberOfLines = 0
         return label
     }()
@@ -64,7 +64,7 @@ final class ProductDetailViewController: UIViewController {
     private let bodyLabel: UILabel = {
         let label = UILabel()
         label.font = .systemFont(ofSize: 16)
-        label.textColor = .darkGray
+        label.textColor = .secondaryLabel
         label.numberOfLines = 0
         return label
     }()
@@ -100,7 +100,7 @@ final class ProductDetailViewController: UIViewController {
         super.viewDidLoad()
         
         title = "详情"
-        view.backgroundColor = .white
+        view.backgroundColor = .systemBackground
         
         setupUI()
         loadData()
@@ -186,13 +186,13 @@ extension ProductDetailViewController {
     
     private func setupBodyTextView() {
         bodyTextView.font = .systemFont(ofSize: 16)
-        bodyTextView.textColor = .black
+        bodyTextView.textColor = .label
         bodyTextView.layer.borderWidth = 1
-        bodyTextView.layer.borderColor = UIColor.systemGray4.cgColor
+        bodyTextView.layer.borderColor = UIColor.separator.cgColor
         bodyTextView.layer.cornerRadius = 6
         bodyTextView.textContainerInset = UIEdgeInsets(top: 8, left: 6, bottom: 8, right: 6)
         bodyTextView.isScrollEnabled = false
-        bodyTextView.backgroundColor = .white
+        bodyTextView.backgroundColor = .secondarySystemBackground
     }
     
     private func setupErrorLabels() {

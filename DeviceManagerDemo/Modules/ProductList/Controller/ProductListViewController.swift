@@ -24,7 +24,7 @@ final class ProductListViewController: UIViewController {
         let label = UILabel()
         label.text = "暂无数据"
         label.textAlignment = .center
-        label.textColor = .lightGray
+        label.textColor = .secondaryLabel
         label.font = .systemFont(ofSize: 16)
         return label
     }()
@@ -40,7 +40,7 @@ final class ProductListViewController: UIViewController {
     private let footerLabel: UILabel = {
         let label = UILabel()
         label.textAlignment = .center
-        label.textColor = .lightGray
+        label.textColor = .secondaryLabel
         label.font = .systemFont(ofSize: 14)
         return label
     }()
@@ -59,7 +59,12 @@ final class ProductListViewController: UIViewController {
         super.viewDidLoad()
         
         title = "文章列表"
-        view.backgroundColor = .white
+        //  确保 VC 的根视图和 TableView 的背景是动态系统背景
+       view.backgroundColor = .systemBackground
+       tableView.backgroundColor = .systemBackground
+       
+       // 如果你之前的行线写死了颜色，也可以顺手改成动态分割线
+       tableView.separatorColor = .separator
         
         setupTableView()
         setupLoadingView()
