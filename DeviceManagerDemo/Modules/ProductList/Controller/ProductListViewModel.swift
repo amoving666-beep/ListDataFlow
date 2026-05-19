@@ -129,8 +129,8 @@ final class ProductListViewModel {
             self.finishLoading()
 
             switch result {
-            case .success(let list):
-                self.handleLoadSuccess(list, mode: mode, targetPage: targetPage)
+            case .success(let pageData):
+                self.handleLoadSuccess(pageData, mode: mode, targetPage: targetPage)
 
             case .failure(let error):
                 self.handleLoadFailure(error)
@@ -224,25 +224,29 @@ final class ProductListViewModel {
         }
     }
 
-    private func handleLoadSuccess(_ list: [Product], mode: LoadMode, targetPage: Int) {
+    private func handleLoadSuccess(_ pageData: PageResponse<Product>, mode: LoadMode, targetPage: Int) {
+        let list = pageData.list
+
         switch mode {
         case .initial, .refresh:
             products = list
-            currentPage = 1
+            currentPage = pageData.page
 
         case .loadMore:
             products.append(contentsOf: list)
-            currentPage = targetPage
+            currentPage = pageData.page
         }
 
-        hasMoreData = list.count == pageSize
+        // 真实分页接口会返回 total，比单纯依赖 list.count == pageSize 更可靠。
+        // products.count 表示当前已经成功展示的总条数，pageData.total 表示服务端总条数。
+        hasMoreData = products.count < pageData.total
         saveCache()
 
         onProductsChanged?(products)
         onViewStateChanged?(makeViewStateForCurrentList())
         onFooterStateChanged?(makeFooterStateForCurrentList())
 
-        print("当前页: \(currentPage), 当前总条数: \(products.count), 是否还有更多: \(hasMoreData)")
+        print("当前页: \(currentPage), 当前总条数: \(products.count), 服务端总条数: \(pageData.total), 是否还有更多: \(hasMoreData)")
     }
 
     private func handleLoadFailure(_ error: Error) {

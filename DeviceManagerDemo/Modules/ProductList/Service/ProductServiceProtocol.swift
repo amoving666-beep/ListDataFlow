@@ -36,6 +36,6 @@ protocol ProductServiceProtocol {
     func fetchList(
         page: Int,
         pageSize: Int,
-        completion: @escaping (Result<[Product], NetworkError>) -> Void
+        completion: @escaping (Result<PageResponse<Product>, NetworkError>) -> Void
     ) -> URLSessionDataTask?
 }

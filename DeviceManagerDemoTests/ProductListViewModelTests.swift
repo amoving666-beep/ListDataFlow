@@ -13,7 +13,7 @@ final class ProductListViewModelTests: XCTestCase {
             makeProduct(id: 1, title: "标题1", body: "内容1"),
             makeProduct(id: 2, title: "标题2", body: "内容2")
         ]
-        mockService.result = .success(mockProducts)
+        mockService.result = .success(makePageResponse(mockProducts))
         var didCallOnProductsChanged = false
         var didReceiveContentState = false
         var didReceiveNoMoreDataFooterState = false
@@ -65,14 +65,14 @@ final class ProductListViewModelTests: XCTestCase {
             makeProduct(id: 1, title: "旧标题1", body: "旧内容1"),
             makeProduct(id: 2, title: "旧标题2", body: "旧内容2")
         ]
-        mockService.result = .success(oldProducts)
+        mockService.result = .success(makePageResponse(oldProducts))
         viewModel.loadData(mode: .initial)
 
         let newProducts = [
             makeProduct(id: 3, title: "新标题3", body: "新内容3"),
             makeProduct(id: 4, title: "新标题4", body: "新内容4")
         ]
-        mockService.result = .success(newProducts)
+        mockService.result = .success(makePageResponse(newProducts))
 
         var didCallOnProductsChanged = false
         var didReceiveContentState = false
@@ -124,14 +124,14 @@ final class ProductListViewModelTests: XCTestCase {
         let oldProducts = (1...10).map {
             makeProduct(id: $0, title: "第一页标题\($0)", body: "第一页内容\($0)")
         }
-        mockService.result = .success(oldProducts)
+        mockService.result = .success(makePageResponse(oldProducts, page: 1, pageSize: 10, total: 12))
         viewModel.loadData(mode: .initial)
 
         let newProducts = [
             makeProduct(id: 11, title: "第二页标题11", body: "第二页内容11"),
             makeProduct(id: 12, title: "第二页标题12", body: "第二页内容12")
         ]
-        mockService.result = .success(newProducts)
+        mockService.result = .success(makePageResponse(newProducts, page: 2, pageSize: 10, total: 12))
 
         var didCallOnProductsChanged = false
         var didReceiveContentState = false
@@ -222,7 +222,7 @@ final class ProductListViewModelTests: XCTestCase {
             makeProduct(id: 1, title: "旧标题1", body: "旧内容1"),
             makeProduct(id: 2, title: "旧标题2", body: "旧内容2")
         ]
-        mockService.result = .success(oldProducts)
+        mockService.result = .success(makePageResponse(oldProducts))
         viewModel.loadData(mode: .initial)
         mockService.result = .failure(NetworkError.requestFailed(URLError(.notConnectedToInternet)))
 
@@ -280,7 +280,7 @@ final class ProductListViewModelTests: XCTestCase {
         let oldProducts = (1...10).map {
             makeProduct(id: $0, title: "第一页标题\($0)", body: "第一页内容\($0)")
         }
-        mockService.result = .success(oldProducts)
+        mockService.result = .success(makePageResponse(oldProducts, page: 1, pageSize: 10, total: 20))
         viewModel.loadData(mode: .initial)
         mockService.result = .failure(NetworkError.requestFailed(URLError(.notConnectedToInternet)))
 
@@ -342,7 +342,7 @@ final class ProductListViewModelTests: XCTestCase {
             makeProduct(id: 2, title: "旧标题2", body: "旧内容2")
         ]
 
-        mockService.result = .success(oldProducts)
+        mockService.result = .success(makePageResponse(oldProducts))
         viewModel.loadData(mode: .initial)
         let newProduct = makeProduct(id: 2, title: "新标题2", body: "新内容2")
 
@@ -375,7 +375,7 @@ final class ProductListViewModelTests: XCTestCase {
             makeProduct(id: 2, title: "旧标题2", body: "旧内容2")
         ]
 
-        mockService.result = .success(oldProducts)
+        mockService.result = .success(makePageResponse(oldProducts))
         viewModel.loadData(mode: .initial)
         let notFoundProduct = makeProduct(id: 999, title: "不存在标题", body: "不存在内容")
 
@@ -404,6 +404,20 @@ final class ProductListViewModelTests: XCTestCase {
         body: String
     ) -> Product {
         return Product(userId: userId, id: id, title: title, body: body)
+    }
+
+    private func makePageResponse(
+        _ products: [Product],
+        page: Int = 1,
+        pageSize: Int = 10,
+        total: Int? = nil
+    ) -> PageResponse<Product> {
+        return PageResponse(
+            list: products,
+            page: page,
+            pageSize: pageSize,
+            total: total ?? products.count
+        )
     }
     private func makeViewModel(service: ProductServiceProtocol) -> ProductListViewModel {
         return ProductListViewModel(service: service)

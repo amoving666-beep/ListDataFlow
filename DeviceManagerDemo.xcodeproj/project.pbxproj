@@ -10,6 +10,12 @@
 		2B0DAB952F9F88AE00C9BD5A /* ProductCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B0DAB942F9F88AE00C9BD5A /* ProductCell.swift */; };
 		2B0DAB982F9F920A00C9BD5A /* CacheHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B0DAB972F9F920A00C9BD5A /* CacheHelper.swift */; };
 		2B1B6C9D2FBC9A24005AA128 /* HomeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B1B6C9C2FBC9A24005AA128 /* HomeViewController.swift */; };
+		2B1B6CAB2FBCA75A005AA128 /* ApiResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B1B6CAA2FBCA75A005AA128 /* ApiResponse.swift */; };
+		2B1B6CAD2FBCA765005AA128 /* PageResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B1B6CAC2FBCA765005AA128 /* PageResponse.swift */; };
+		2B1B6CAF2FBCA77A005AA128 /* HTTPMethod.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B1B6CAE2FBCA77A005AA128 /* HTTPMethod.swift */; };
+		2B1B6CB12FBCA789005AA128 /* Endpoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B1B6CB02FBCA789005AA128 /* Endpoint.swift */; };
+		2B1B6CB32FBCA79A005AA128 /* ProductEndpoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B1B6CB22FBCA79A005AA128 /* ProductEndpoint.swift */; };
+		2B1B6CB52FBCA7A7005AA128 /* NetworkClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B1B6CB42FBCA7A7005AA128 /* NetworkClient.swift */; };
 		2B260CFE2F94F14A00F95950 /* Product.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B260CFD2F94F14A00F95950 /* Product.swift */; };
 		2B260D022F94F16E00F95950 /* ProductListViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B260D012F94F16E00F95950 /* ProductListViewController.swift */; };
 		2B260D042F94F17900F95950 /* ProductDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B260D032F94F17900F95950 /* ProductDetailViewController.swift */; };
@@ -43,6 +49,12 @@
 		2B0DAB942F9F88AE00C9BD5A /* ProductCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProductCell.swift; sourceTree = "<group>"; };
 		2B0DAB972F9F920A00C9BD5A /* CacheHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CacheHelper.swift; sourceTree = "<group>"; };
 		2B1B6C9C2FBC9A24005AA128 /* HomeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeViewController.swift; sourceTree = "<group>"; };
+		2B1B6CAA2FBCA75A005AA128 /* ApiResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApiResponse.swift; sourceTree = "<group>"; };
+		2B1B6CAC2FBCA765005AA128 /* PageResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PageResponse.swift; sourceTree = "<group>"; };
+		2B1B6CAE2FBCA77A005AA128 /* HTTPMethod.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HTTPMethod.swift; sourceTree = "<group>"; };
+		2B1B6CB02FBCA789005AA128 /* Endpoint.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Endpoint.swift; sourceTree = "<group>"; };
+		2B1B6CB22FBCA79A005AA128 /* ProductEndpoint.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProductEndpoint.swift; sourceTree = "<group>"; };
+		2B1B6CB42FBCA7A7005AA128 /* NetworkClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkClient.swift; sourceTree = "<group>"; };
 		2B260CFD2F94F14A00F95950 /* Product.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Product.swift; sourceTree = "<group>"; };
 		2B260D012F94F16E00F95950 /* ProductListViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProductListViewController.swift; sourceTree = "<group>"; };
 		2B260D032F94F17900F95950 /* ProductDetailViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProductDetailViewController.swift; sourceTree = "<group>"; };
@@ -138,7 +150,8 @@
 			isa = PBXGroup;
 			children = (
 				2B260CFD2F94F14A00F95950 /* Product.swift */,
-				2B7D654A2FA7416700C9D900 /* ProductListViewModel.swift */,
+				2B1B6CAA2FBCA75A005AA128 /* ApiResponse.swift */,
+				2B1B6CAC2FBCA765005AA128 /* PageResponse.swift */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -149,6 +162,10 @@
 				2BC976442FA102C3000D94EE /* NetworkError.swift */,
 				2B260D052F94F48B00F95950 /* ProductService.swift */,
 				2B403BC82FAB649D00C84332 /* ProductServiceProtocol.swift */,
+				2B1B6CAE2FBCA77A005AA128 /* HTTPMethod.swift */,
+				2B1B6CB02FBCA789005AA128 /* Endpoint.swift */,
+				2B1B6CB22FBCA79A005AA128 /* ProductEndpoint.swift */,
+				2B1B6CB42FBCA7A7005AA128 /* NetworkClient.swift */,
 			);
 			path = Service;
 			sourceTree = "<group>";
@@ -164,6 +181,7 @@
 		2B260D0B2F94F51800F95950 /* Controller */ = {
 			isa = PBXGroup;
 			children = (
+				2B7D654A2FA7416700C9D900 /* ProductListViewModel.swift */,
 				2B260D012F94F16E00F95950 /* ProductListViewController.swift */,
 				2B260D032F94F17900F95950 /* ProductDetailViewController.swift */,
 			);
@@ -339,8 +357,11 @@
 				2B1B6C9D2FBC9A24005AA128 /* HomeViewController.swift in Sources */,
 				2B260D022F94F16E00F95950 /* ProductListViewController.swift in Sources */,
 				2B462D232F9111E200B19AFA /* DeviceCell.swift in Sources */,
+				2B1B6CB32FBCA79A005AA128 /* ProductEndpoint.swift in Sources */,
 				2B462D242F9111E200B19AFA /* DeviceDetailViewController.swift in Sources */,
+				2B1B6CB12FBCA789005AA128 /* Endpoint.swift in Sources */,
 				2B462D252F9111E200B19AFA /* DeviceListViewController.swift in Sources */,
+				2B1B6CAF2FBCA77A005AA128 /* HTTPMethod.swift in Sources */,
 				2B462D262F9111E200B19AFA /* DeviceRowData.swift in Sources */,
 				2B0DAB982F9F920A00C9BD5A /* CacheHelper.swift in Sources */,
 				2B260D042F94F17900F95950 /* ProductDetailViewController.swift in Sources */,
@@ -348,7 +369,10 @@
 				2B403BC92FAB649D00C84332 /* ProductServiceProtocol.swift in Sources */,
 				2B7D654B2FA7416700C9D900 /* ProductListViewModel.swift in Sources */,
 				2B0DAB952F9F88AE00C9BD5A /* ProductCell.swift in Sources */,
+				2B1B6CAB2FBCA75A005AA128 /* ApiResponse.swift in Sources */,
+				2B1B6CAD2FBCA765005AA128 /* PageResponse.swift in Sources */,
 				2B462D272F9111E200B19AFA /* SceneDelegate.swift in Sources */,
+				2B1B6CB52FBCA7A7005AA128 /* NetworkClient.swift in Sources */,
 				2B462D282F9111E200B19AFA /* ViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -389,6 +413,7 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = E7Y6FDL9VX;
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.test.DeviceManagerDemoTests;
@@ -409,6 +434,7 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = E7Y6FDL9VX;
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.test.DeviceManagerDemoTests;

@@ -22,9 +22,9 @@ final class MockProductService: ProductServiceProtocol {
     /// 测试用例提前设置的返回结果。
     ///
     /// 比如：
-    /// result = .success([...])
+    /// result = .success(PageResponse(list: [...], page: 1, pageSize: 10, total: 20))
     /// result = .failure(NetworkError.invalidResponse)
-    var result: Result<[Product], NetworkError>?
+    var result: Result<PageResponse<Product>, NetworkError>?
 
     /// 记录 ViewModel 请求的是第几页。
     ///
@@ -38,7 +38,7 @@ final class MockProductService: ProductServiceProtocol {
     func fetchList(
         page: Int,
         pageSize: Int,
-        completion: @escaping (Result<[Product], NetworkError>) -> Void
+        completion: @escaping (Result<PageResponse<Product>, NetworkError>) -> Void
     ) -> URLSessionDataTask? {
         
         requestedPage = page

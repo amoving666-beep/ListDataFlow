@@ -110,6 +110,18 @@ enum NetworkError: Error {
     /// 它和 requestFailed(Error) 不是一回事。
     case invalidStatusCode(Int)
 
+    /// 返回 data 为空。
+    ///
+    /// 发生时机：URL 正确、请求成功、response 正常、状态码成功，
+    /// 但是 URLSession 回调里的 `data` 是 nil。
+    ///
+    /// 注意：
+    /// `noData` 不是“服务器正常返回空数组”。
+    ///
+    /// - `success([])`：表示请求成功，但业务数据为空，应该走 empty 状态。
+    /// - `noData`：表示连可解析的响应体都没有，属于请求链路异常。
+    case noData
+
     /// JSON 解码失败。
     ///
     /// 发生时机：URL 正确、请求成功、response 正常、状态码成功、data 也存在，
@@ -128,8 +140,41 @@ enum NetworkError: Error {
     /// decodingFailed 不代表网络请求失败。
     /// 它代表“网络已经成功拿到数据，但 Swift Model 解析失败”。
     case decodingFailed(Error)
-    
-    // 没有数据 不是返回为空。是没有数据
-    
-    case noData
+
+    /// 业务失败。
+    ///
+    /// 发生时机：HTTP 层成功、JSON 也成功解出了 `ApiResponse<T>`，
+    /// 但是后端返回的业务 `code` 不是成功码。
+    ///
+    /// 举例：
+    /// ```json
+    /// {
+    ///     "code": 1001,
+    ///     "message": "商品不存在",
+    ///     "data": null
+    /// }
+    /// ```
+    ///
+    /// 注意：
+    /// - `invalidStatusCode(Int)`：表示 HTTP 状态码失败，例如 404、500。
+    /// - `businessFailed(code:message:)`：表示 HTTP 成功，但业务 code 失败。
+    case businessFailed(code: Int, message: String)
+
+    /// 登录态失效 / 未授权。
+    ///
+    /// 发生时机可能有两种：
+    /// 1. HTTP 层直接返回 `statusCode = 401`
+    /// 2. HTTP 200，但业务响应体里 `code = 401`
+    ///
+    /// 这种错误通常表示：
+    /// - 未登录
+    /// - token 过期
+    /// - token 无效
+    /// - 账号被踢下线
+    ///
+    /// 注意：
+    /// NetworkClient 只负责识别 `unauthorized` 并返回错误，
+    /// 不应该在网络层直接 push 登录页。
+    /// 跳登录页应该交给 VC / RootVC / Coordinator 等上层统一处理。
+    case unauthorized(message: String)
 }
