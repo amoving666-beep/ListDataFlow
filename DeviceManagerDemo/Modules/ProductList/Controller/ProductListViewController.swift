@@ -164,10 +164,7 @@ extension ProductListViewController {
     
     private func bindViewModel() {
         viewModel.onProductsChanged = { [weak self] _ in
-            guard let self = self else { return }
-            self.tableView.reloadData()
-            self.tableView.layoutIfNeeded()
-            self.tryAutoLoadMoreIfContentNotFull()
+            self?.tableView.reloadData()
         }
         
         viewModel.onViewStateChanged = { [weak self] state in
@@ -176,6 +173,14 @@ extension ProductListViewController {
         
         viewModel.onFooterStateChanged = { [weak self] state in
             self?.updateFooterState(state)
+        }
+
+        viewModel.onCanCheckAutoLoadMore = { [weak self] in
+            DispatchQueue.main.async {
+                guard let self = self else { return }
+                self.tableView.layoutIfNeeded()
+                self.tryAutoLoadMoreIfContentNotFull()
+            }
         }
     }
 }
@@ -331,7 +336,7 @@ extension ProductListViewController {
             return
         }
 
-        print("首屏内容不足一屏，自动触发加载更多")
+        print("真实网络首屏内容不足一屏，自动触发加载更多")
         isLoadMoreTriggered = true
         viewModel.loadData(mode: .loadMore)
     }

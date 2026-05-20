@@ -65,6 +65,14 @@ final class ProductListViewModel {
 
     var onFooterStateChanged: ((FooterState) -> Void)?
 
+    /// 通知 VC：本次真实网络请求已经成功刷新列表，
+    /// 可以检查内容高度是否不足一屏，必要时自动补一次 loadMore。
+    ///
+    /// 注意：
+    /// loadCache / clearCache 不能触发这个回调，
+    /// 否则缓存数据或清空后的空列表会误触发 page 2。
+    var onCanCheckAutoLoadMore: (() -> Void)?
+
     // MARK: - Public Methods
 
     func loadCache() {
@@ -245,6 +253,13 @@ final class ProductListViewModel {
         onProductsChanged?(products)
         onViewStateChanged?(makeViewStateForCurrentList())
         onFooterStateChanged?(makeFooterStateForCurrentList())
+
+        // 只有真实网络 initial / refresh 成功后，才允许 VC 检查是否需要自动补满一屏。
+        // loadMore 成功后不继续自动触发，避免接口异常或内容高度计算导致连续请求。
+        // loadCache / clearCache 不会走到这里，所以不会再被缓存数据误触发 page 2。
+        if mode == .initial || mode == .refresh {
+            onCanCheckAutoLoadMore?()
+        }
 
         print("当前页: \(currentPage), 当前总条数: \(products.count), 服务端总条数: \(pageData.total), 是否还有更多: \(hasMoreData)")
     }

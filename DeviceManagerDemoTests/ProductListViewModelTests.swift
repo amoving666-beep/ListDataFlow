@@ -3,6 +3,16 @@ import XCTest
 
 final class ProductListViewModelTests: XCTestCase {
 
+    override func setUp() {
+        super.setUp()
+        CacheHelper.clear(key: "ProductListCacheKey")
+    }
+
+    override func tearDown() {
+        CacheHelper.clear(key: "ProductListCacheKey")
+        super.tearDown()
+    }
+
     // MARK: - Initial
     
     func testInitialSuccess_updatesProductsAndShowsContent() {
