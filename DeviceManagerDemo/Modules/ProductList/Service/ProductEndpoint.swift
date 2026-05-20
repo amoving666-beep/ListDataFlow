@@ -25,7 +25,7 @@ enum ProductEndpoint: Endpoint {
     ///
     /// 你自己把下面占位符替换成真实 anon public key。
     /// 注意：这是学习项目直连 Supabase 的写法。
-    private static let supabaseAnonKey = "YOUR_SUPABASE_ANON_KEY"
+    private static let supabaseAnonKey = LocalConfig.supabaseAnonKey
 
     /// 商品列表接口。
     ///
