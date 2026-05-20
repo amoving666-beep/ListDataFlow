@@ -58,7 +58,8 @@ final class ProductCell: UITableViewCell {
     }
     
     func configure(with product: Product) {
-        titleLabel.text = product.title
+        
+        titleLabel.text = "\(product.id)-\(product.title)"
         bodyLabel.text = product.body
     }
     

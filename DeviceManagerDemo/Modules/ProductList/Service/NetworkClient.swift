@@ -28,34 +28,36 @@ final class NetworkClient {
     ///
     /// 后续如果接真实接口，只需要把这里换成真实 baseURL。
     /// 例如：`https://api.xxx.com`
-    private let baseURL = "https://example.com"
+    private let baseURL = "https://lgvajryebsdxjnvvgvsl.supabase.co"
 
     /// 发起一个通用网络请求。
     ///
     /// - Parameters:
     ///   - endpoint: 接口说明书，描述 path / method / query / headers / body。
     ///   - completion: 请求完成后的回调。成功返回真正的业务数据 `T`，失败返回 `NetworkError`。
+    @discardableResult
     func request<T: Decodable>(
         endpoint: Endpoint,
         completion: @escaping (Result<T, NetworkError>) -> Void
-    ) {
+    ) -> URLSessionDataTask? {
         let request: URLRequest
 
         do {
             request = try makeRequest(from: endpoint)
+            
         } catch let error as NetworkError {
             DispatchQueue.main.async {
                 completion(.failure(error))
             }
-            return
+            return nil
         } catch {
             DispatchQueue.main.async {
                 completion(.failure(.requestFailed(error)))
             }
-            return
+            return nil
         }
 
-        URLSession.shared.dataTask(with: request) { data, response, error in
+        let task = URLSession.shared.dataTask(with: request) { data, response, error in
             // 1. 判断 URLSession 系统错误，例如断网、超时、DNS 失败。
             if let error = error {
                 DispatchQueue.main.async {
@@ -136,7 +138,10 @@ final class NetworkClient {
                     completion(.failure(.decodingFailed(error)))
                 }
             }
-        }.resume()
+        }
+
+        task.resume()
+        return task
     }
 
     /// 根据 Endpoint 生成 URLRequest。

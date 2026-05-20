@@ -85,7 +85,7 @@ final class ProductListViewModel {
         CacheHelper.clear(key: cacheKey)
         products.removeAll()
         currentPage = 1
-        hasMoreData = true
+        hasMoreData = false
 
         onProductsChanged?(products)
         onViewStateChanged?(.empty("暂无数据"))

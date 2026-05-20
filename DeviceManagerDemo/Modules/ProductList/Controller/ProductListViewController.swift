@@ -164,7 +164,10 @@ extension ProductListViewController {
     
     private func bindViewModel() {
         viewModel.onProductsChanged = { [weak self] _ in
-            self?.tableView.reloadData()
+            guard let self = self else { return }
+            self.tableView.reloadData()
+            self.tableView.layoutIfNeeded()
+            self.tryAutoLoadMoreIfContentNotFull()
         }
         
         viewModel.onViewStateChanged = { [weak self] state in
@@ -309,6 +312,30 @@ extension ProductListViewController: UITableViewDelegate {
 // MARK: - UIScrollViewDelegate
 extension ProductListViewController {
     
+    /// 首屏数据不足一屏时，用户无法真正“上拉到底”。
+    /// 这种情况下如果服务端仍然表示有更多数据，就自动补一次 loadMore，
+    /// 避免被 contentHeight <= frameHeight 的保护逻辑提前 return 卡住。
+    private func tryAutoLoadMoreIfContentNotFull() {
+        guard viewModel.canLoadMore else {
+            return
+        }
+
+        let contentHeight = tableView.contentSize.height
+        let frameHeight = tableView.frame.size.height
+
+        guard contentHeight > 0, contentHeight <= frameHeight else {
+            return
+        }
+
+        guard !isLoadMoreTriggered else {
+            return
+        }
+
+        print("首屏内容不足一屏，自动触发加载更多")
+        isLoadMoreTriggered = true
+        viewModel.loadData(mode: .loadMore)
+    }
+    
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
         guard viewModel.canLoadMore else {
             return
@@ -318,6 +345,8 @@ extension ProductListViewController {
         let contentHeight = scrollView.contentSize.height
         let frameHeight = scrollView.frame.size.height
         
+        // 内容不足一屏时，没有真正的“上拉到底”滚动距离。
+        // 这种场景由 tryAutoLoadMoreIfContentNotFull() 在 reloadData 后补一次 loadMore。
         if contentHeight <= frameHeight {
             return
         }
