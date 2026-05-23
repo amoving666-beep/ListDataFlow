@@ -7,16 +7,6 @@
 import Foundation
 
 /// 商品模块的接口说明。
-///
-/// 当前接入 Supabase RPC：
-/// POST /rest/v1/rpc/get_posts
-///
-/// 请求 body：
-/// {
-///   "p_page": 1,
-///   "p_page_size": 10
-/// }
-///
 /// 返回结构：
 /// ApiResponse<PageResponse<Product>>
 enum ProductEndpoint: Endpoint {
@@ -28,23 +18,44 @@ enum ProductEndpoint: Endpoint {
     private static let supabaseAnonKey = LocalConfig.supabaseAnonKey
 
     /// 商品列表接口。
-    ///
-    /// - page: 请求第几页。
-    /// - pageSize: 每页请求多少条。
     case list(page: Int, pageSize: Int)
+
+    /// 用户信息接口。
+    case userInfo
+
+    /// Banner 列表接口。
+    case banners
+
+    /// 推荐商品接口。
+    case recommendProducts
+
+    /// 未读消息数接口。
+    case unreadCount
 
     /// 接口路径。
     var path: String {
         switch self {
         case .list:
             return "/rest/v1/rpc/get_posts"
+        case .userInfo:
+            return "/rest/v1/rpc/get_user_info"
+        case .banners:
+            return "/rest/v1/rpc/get_banners"
+        case .recommendProducts:
+            return "/rest/v1/rpc/get_recommend_products"
+        case .unreadCount:
+            return "/rest/v1/rpc/get_unread_count"
         }
     }
 
     /// 请求方法。
     var method: HTTPMethod {
         switch self {
-        case .list:
+        case .list,
+             .userInfo,
+             .banners,
+             .recommendProducts,
+             .unreadCount:
             return .post
         }
     }
@@ -86,6 +97,14 @@ enum ProductEndpoint: Endpoint {
 
             return try? JSONSerialization.data(
                 withJSONObject: params,
+                options: []
+            )
+        case .userInfo,
+             .banners,
+             .recommendProducts,
+             .unreadCount:
+            return try? JSONSerialization.data(
+                withJSONObject: [:],
                 options: []
             )
         }

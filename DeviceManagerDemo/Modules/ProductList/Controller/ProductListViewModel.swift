@@ -31,6 +31,14 @@ final class ProductListViewModel {
         case loadingMore
     }
 
+    enum RequestKey {
+        case productList
+        case userInfo
+        case banner
+        case recommendProducts
+        case unreadCount
+    }
+    
     // MARK: - State
 
     private(set) var products: [Product] = []
@@ -38,8 +46,10 @@ final class ProductListViewModel {
     private var currentPage: Int = 1
     private let pageSize: Int = 10
     private var loadState: LoadState = .idle
-    private var currentTask: URLSessionDataTask?
-    private var currentRequestID: Int = 0
+    
+    private var taskMap: [RequestKey: URLSessionDataTask] = [:]
+    private var requestIDMap: [RequestKey: UUID] = [:]
+    
     private var hasMoreData: Bool = true
     private let cacheKey = "ProductListCacheKey"
 
@@ -122,18 +132,22 @@ final class ProductListViewModel {
         let targetPage = makeTargetPage(mode: mode)
 
         /// requestID 用于防止旧请求回调覆盖新请求结果。
-        currentRequestID += 1
-        let requestID = currentRequestID
+        ///
+        /// 多请求版本不再使用单个 currentRequestID，
+        /// 而是给每个 RequestKey 单独保存一个 requestID。
+        let requestKey = RequestKey.productList
+        let requestID = UUID()
+        requestIDMap[requestKey] = requestID
 
-        currentTask = service.fetchList(page: targetPage, pageSize: pageSize) { [weak self] result in
+        let task = service.fetchList(page: targetPage, pageSize: pageSize) { [weak self] result in
             guard let self = self else { return }
 
-            guard requestID == self.currentRequestID else {
-                print("丢弃旧请求回调 requestID: \(requestID), currentRequestID: \(self.currentRequestID)")
+            guard requestID == self.requestIDMap[requestKey] else {
+                print("丢弃旧商品列表请求回调 requestID: \(requestID), currentRequestID: \(String(describing: self.requestIDMap[requestKey]))")
                 return
             }
 
-            self.currentTask = nil
+            self.taskMap[requestKey] = nil
             self.finishLoading()
 
             switch result {
@@ -144,6 +158,8 @@ final class ProductListViewModel {
                 self.handleLoadFailure(error)
             }
         }
+
+        taskMap[requestKey] = task
     }
 
     private func prepareForNewRequestIfNeeded(mode: LoadMode) {
@@ -152,8 +168,9 @@ final class ProductListViewModel {
             return
         }
 
-        currentTask?.cancel()
-        currentTask = nil
+        taskMap[.productList]?.cancel()
+        taskMap[.productList] = nil
+        requestIDMap[.productList] = UUID()
         loadState = .idle
         onFooterStateChanged?(makeFooterStateForCurrentList())
 
@@ -175,8 +192,9 @@ final class ProductListViewModel {
     }
 
     func cancelCurrentTask() {
-        currentTask?.cancel()
-        currentTask = nil
+        taskMap[.productList]?.cancel()
+        taskMap[.productList] = nil
+        requestIDMap[.productList] = UUID()
     }
 
     // MARK: - Private Loading Logic
