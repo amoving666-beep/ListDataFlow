@@ -49,6 +49,24 @@ final class MockProductService: ProductServiceProtocol {
     /// 记录 ViewModel 请求的每页数量。
     private(set) var requestedPageSize: Int?
 
+    //
+    var shouldDelayCompletion = false
+    var pendingCompletion: ((Result<PageResponse<Product>, NetworkError>) -> Void)?
+
+    /// 清空请求记录，方便测试判断下一次 loadData 是否真的发起请求。
+    func resetRequestRecord() {
+        requestedPage = nil
+        requestedPageSize = nil
+    }
+
+    /// 手动触发被延迟保存的 completion。
+    func completePendingRequest() {
+        guard let result = result else { return }
+        let completion = pendingCompletion
+        pendingCompletion = nil
+        completion?(result)
+    }
+    
     func fetchList(
         page: Int,
         pageSize: Int,
@@ -57,6 +75,11 @@ final class MockProductService: ProductServiceProtocol {
         
         requestedPage = page
         requestedPageSize = pageSize
+
+        if shouldDelayCompletion {
+            pendingCompletion = completion
+            return nil
+        }
 
         if let result = result {
             completion(result)

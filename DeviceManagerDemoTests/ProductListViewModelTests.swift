@@ -111,6 +111,121 @@ final class ProductListViewModelTests: XCTestCase {
         XCTAssertTrue(outputSpy.didReceiveNoMoreDataFooterState)
     }
 
+    // loadMore 在没有更多数据时：应该被拒绝，不发起新请求
+    func testLoadMoreWhenNoMoreData_isRejected() {
+        let mockService = MockProductService()
+        let viewModel = makeViewModel(service: mockService)
+
+        let oldProducts = [
+            makeProduct(id: 1, title: "标题1", body: "内容1"),
+            makeProduct(id: 2, title: "标题2", body: "内容2")
+        ]
+        mockService.result = .success(makePageResponse(oldProducts, page: 1, pageSize: 10, total: 2))
+        viewModel.loadData(mode: .initial)
+
+        //清空请求 page 和 Size，
+        mockService.resetRequestRecord()
+
+        viewModel.loadData(mode: .loadMore)
+
+        XCTAssertNil(mockService.requestedPage)
+        XCTAssertNil(mockService.requestedPageSize)
+        XCTAssertEqual(viewModel.products.count, 2)
+        assertProduct(viewModel.products.first, id: 1, title: "标题1", body: "内容1")
+        assertProduct(viewModel.products.last, id: 2, title: "标题2", body: "内容2")
+    }
+
+    // refresh 在没有更多数据时：仍然允许重新请求第一页
+    func testRefreshAllowedWhenNoMoreData() {
+        let mockService = MockProductService()
+        let viewModel = makeViewModel(service: mockService)
+
+        let oldProducts = [
+            makeProduct(id: 1, title: "旧标题1", body: "旧内容1"),
+            makeProduct(id: 2, title: "旧标题2", body: "旧内容2")
+        ]
+        mockService.result = .success(makePageResponse(oldProducts, page: 1, pageSize: 10, total: 2))
+        viewModel.loadData(mode: .initial)
+
+        let newProducts = [
+            makeProduct(id: 3, title: "新标题3", body: "新内容3")
+        ]
+        mockService.result = .success(makePageResponse(newProducts, page: 1, pageSize: 10, total: 1))
+
+        viewModel.loadData(mode: .refresh)
+
+        XCTAssertEqual(mockService.requestedPage, 1)
+        XCTAssertEqual(mockService.requestedPageSize, 10)
+        XCTAssertEqual(viewModel.products.count, 1)
+        assertProduct(viewModel.products.first, id: 3, title: "新标题3", body: "新内容3")
+        XCTAssertFalse(viewModel.products.contains(where: { $0.id == 1 }))
+        XCTAssertFalse(viewModel.products.contains(where: { $0.id == 2 }))
+    }
+
+    // loadMore 在没有基础数据时：应该被拒绝，避免 clearCache 后误触发 page 2
+    func testLoadMoreWhenProductsIsEmpty_isRejected() {
+        let mockService = MockProductService()
+        let viewModel = makeViewModel(service: mockService)
+
+        viewModel.loadData(mode: .loadMore)
+
+        XCTAssertNil(mockService.requestedPage)
+        XCTAssertNil(mockService.requestedPageSize)
+        XCTAssertEqual(viewModel.products.count, 0)
+    }
+
+    // refreshing 中触发 loadMore：应该被拒绝，避免第一页重建时追加下一页
+    func testLoadMoreWhileRefreshing_isRejected() {
+        let mockService = MockProductService()
+        let viewModel = makeViewModel(service: mockService)
+
+        let oldProducts = (1...10).map {
+            makeProduct(id: $0, title: "第一页标题\($0)", body: "第一页内容\($0)")
+        }
+        mockService.result = .success(makePageResponse(oldProducts, page: 1, pageSize: 10, total: 20))
+        viewModel.loadData(mode: .initial)
+
+        mockService.shouldDelayCompletion = true
+        mockService.result = .success(makePageResponse(oldProducts, page: 1, pageSize: 10, total: 20))
+        viewModel.loadData(mode: .refresh)
+        
+        //清空请求 page 和 Size，
+        mockService.resetRequestRecord()
+
+        viewModel.loadData(mode: .loadMore)
+
+        XCTAssertNil(mockService.requestedPage)
+        XCTAssertNil(mockService.requestedPageSize)
+        XCTAssertEqual(viewModel.products.count, 10)
+    }
+
+    // loadingMore 中重复触发 loadMore：应该被拒绝，避免重复请求同一页
+    func testRepeatedLoadMore_isRejected() {
+        let mockService = MockProductService()
+        let viewModel = makeViewModel(service: mockService)
+
+        let oldProducts = (1...10).map {
+            makeProduct(id: $0, title: "第一页标题\($0)", body: "第一页内容\($0)")
+        }
+        mockService.result = .success(makePageResponse(oldProducts, page: 1, pageSize: 10, total: 20))
+        viewModel.loadData(mode: .initial)
+
+        mockService.shouldDelayCompletion = true
+        mockService.result = .success(makePageResponse([
+            makeProduct(id: 11, title: "第二页标题11", body: "第二页内容11")
+        ], page: 2, pageSize: 10, total: 20))
+        viewModel.loadData(mode: .loadMore)
+
+        //清空请求 page 和 Size，
+        mockService.resetRequestRecord()
+
+        viewModel.loadData(mode: .loadMore)
+
+        XCTAssertNil(mockService.requestedPage)
+        XCTAssertNil(mockService.requestedPageSize)
+        XCTAssertEqual(viewModel.products.count, 10)
+    }
+
     // MARK: - Failure
 
     // initial 失败且无旧数据：进入 error 状态

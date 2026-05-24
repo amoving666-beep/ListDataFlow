@@ -60,7 +60,7 @@ final class ProductListViewModel {
     
     /// 暴露给 VC 的分页边界，避免滚动层直接依赖内部状态机。
     var canLoadMore: Bool {
-        return loadState == .idle && hasMoreData
+        return loadState == .idle && hasMoreData && !products.isEmpty
     }
 
     // MARK: - Outputs
@@ -191,15 +191,38 @@ final class ProductListViewModel {
     // MARK: - Private Loading Logic
 
     private func canLoadData(mode: LoadMode) -> Bool {
-        if loadState != .idle {
-            return false
-        }
+       
+            switch mode {
 
-        if mode == .loadMore && !hasMoreData {
-            return false
-        }
-
-        return true
+            case .initial:
+                guard loadState == .idle else {
+                    print("拦截 initial：当前已有请求进行中，loadState = \(loadState)")
+                    return false
+                }
+                
+                return true
+                
+            case .refresh:
+                // refresh 优先级最高。
+                // prepareForNewRequestIfNeeded(mode:) 已经负责取消旧请求并把 loadState 重置为 idle。
+                return true
+                
+            case .loadMore:
+                guard loadState == .idle else {
+                    print("拦截 loadMore：当前已有请求进行中，loadState = \(loadState)")
+                    return false
+                }
+                guard hasMoreData else {
+                    print("拦截 loadMore：没有更多数据")
+                    return false
+                }
+                guard !products.isEmpty else {
+                    print("拦截 loadMore：当前没有基础数据，不能加载下一页")
+                    return false
+                }
+                
+                return true
+            }
     }
 
     private func beginLoading(mode: LoadMode) {
