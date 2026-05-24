@@ -406,6 +406,65 @@ final class ProductListViewModelTests: XCTestCase {
         XCTAssertFalse(didCallOnProductsChanged, "updateProduct 找不到目标时，不应该触发 onProductsChanged")
     }
 
+    func testCancelledRequest_doesNotPolluteState() {
+        let mockService = MockProductService()
+        let viewModel = makeViewModel(service: mockService)
+
+        let oldProducts = [
+            makeProduct(id: 1, title: "旧标题1", body: "旧内容1"),
+            makeProduct(id: 2, title: "旧标题2", body: "旧内容2")
+        ]
+
+        mockService.result = .success(makePageResponse(oldProducts, page: 1, pageSize: 10, total: 20))
+        viewModel.loadData(mode: .initial)
+
+        mockService.result = .failure(NetworkError.cancelled)
+
+        var didReceiveErrorState = false
+        var didReceiveEmptyState = false
+        var didCallOnProductsChanged = false
+        var didReceiveNoMoreDataFooterState = false
+
+        viewModel.onProductsChanged = { _ in
+            didCallOnProductsChanged = true
+        }
+
+        viewModel.onViewStateChanged = { state in
+            switch state {
+            case .error:
+                didReceiveErrorState = true
+            case .empty:
+                didReceiveEmptyState = true
+            default:
+                break
+            }
+        }
+
+        viewModel.onFooterStateChanged = { state in
+            switch state {
+            case .noMoreData:
+                didReceiveNoMoreDataFooterState = true
+            default:
+                break
+            }
+        }
+
+        viewModel.loadData(mode: .refresh)
+
+        XCTAssertEqual(mockService.requestedPage, 1, "cancelled refresh 仍然是请求第 1 页")
+        XCTAssertEqual(viewModel.products.count, 2, "cancelled 不应该清空旧数据")
+        XCTAssertEqual(viewModel.products.first?.id, 1, "cancelled 后第一条旧数据 id 应该保留")
+        XCTAssertEqual(viewModel.products.first?.title, "旧标题1", "cancelled 后第一条旧数据 title 应该保留")
+        XCTAssertEqual(viewModel.products.first?.body, "旧内容1", "cancelled 后第一条旧数据 body 应该保留")
+        XCTAssertEqual(viewModel.products.last?.id, 2, "cancelled 后最后一条旧数据 id 应该保留")
+        XCTAssertEqual(viewModel.products.last?.title, "旧标题2", "cancelled 后最后一条旧数据 title 应该保留")
+        XCTAssertEqual(viewModel.products.last?.body, "旧内容2", "cancelled 后最后一条旧数据 body 应该保留")
+        XCTAssertFalse(didReceiveErrorState, "cancelled 不应该进入 error")
+        XCTAssertFalse(didReceiveEmptyState, "cancelled 不是空数据，不应该进入 empty")
+        XCTAssertFalse(didCallOnProductsChanged, "cancelled 没有新数据，不应该触发 onProductsChanged")
+        XCTAssertFalse(didReceiveNoMoreDataFooterState, "cancelled 不应该污染 FooterState")
+    }
+    
     // MARK: - Helpers
     private func makeProduct(
         userId: Int = 1,

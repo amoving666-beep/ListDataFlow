@@ -16,6 +16,23 @@ import Foundation
 /// 而是由测试用例提前设置 result，
 /// 让它模拟成功或失败。
 final class MockProductService: ProductServiceProtocol {
+    
+    func fetchUserInfo(completion: @escaping (Result<DeviceManagerDemo.UserInfo, DeviceManagerDemo.NetworkError>) -> Void) -> URLSessionDataTask? {
+        return nil
+    }
+    
+    func fetchBanners(completion: @escaping (Result<[DeviceManagerDemo.Banner], DeviceManagerDemo.NetworkError>) -> Void) -> URLSessionDataTask? {
+        return nil
+    }
+    
+    func fetchRecommendProducts(completion: @escaping (Result<[DeviceManagerDemo.Product], DeviceManagerDemo.NetworkError>) -> Void) -> URLSessionDataTask? {
+        return nil
+    }
+    
+    func fetchUnreadCount(completion: @escaping (Result<DeviceManagerDemo.UnreadCount, DeviceManagerDemo.NetworkError>) -> Void) -> URLSessionDataTask? {
+        return nil
+    }
+    
 
     
 
@@ -27,9 +44,6 @@ final class MockProductService: ProductServiceProtocol {
     var result: Result<PageResponse<Product>, NetworkError>?
 
     /// 记录 ViewModel 请求的是第几页。
-    ///
-    /// 后面测试 initial / refresh / loadMore 时，
-    /// 可以用它判断 ViewModel 有没有请求正确页码。
     private(set) var requestedPage: Int?
 
     /// 记录 ViewModel 请求的每页数量。

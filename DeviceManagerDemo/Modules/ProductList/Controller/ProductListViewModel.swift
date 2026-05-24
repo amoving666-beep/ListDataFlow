@@ -279,14 +279,11 @@ final class ProductListViewModel {
     }
 
     private func handleLoadFailure(_ error: Error) {
-        if let networkError = error as? NetworkError {
-            switch networkError {
-            case .requestFailed(let urlError as URLError) where urlError.code == .cancelled:
-                print("请求已取消，不作为失败处理")
-                return
-            default:
-                break
-            }
+        
+        if let networkError = error as? NetworkError,
+           case .cancelled = networkError {
+            print("请求已取消，静默忽略")
+            return
         }
 
         print("请求失败 error:", error)

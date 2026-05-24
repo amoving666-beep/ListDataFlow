@@ -61,6 +61,13 @@ final class NetworkClient {
             // 1. 判断 URLSession 系统错误，例如断网、超时、DNS 失败。
             if let error = error {
                 DispatchQueue.main.async {
+                   
+                    if let urlError = error as? URLError,
+                       urlError.code == .cancelled {
+                        completion(.failure(NetworkError.cancelled))
+                        return
+                    }
+
                     completion(.failure(.requestFailed(error)))
                 }
                 return
