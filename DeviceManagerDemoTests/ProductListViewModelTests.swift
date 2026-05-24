@@ -3,6 +3,13 @@ import XCTest
 
 final class ProductListViewModelTests: XCTestCase {
 
+    // 测试分组说明：
+    // 1. Initial / Refresh / Load More：验证三种加载入口的成功路径和入口拦截
+    // 2. Failure / Cancelled：验证失败和取消不会误改列表状态
+    // 3. Concurrent Requests：验证旧请求乱序返回时不会污染新数据
+    // 4. Update Product：验证详情页保存后的本地列表更新
+    // 5. Helpers：统一创建测试数据、ViewModel 和回调监听，减少重复代码
+
     override func setUp() {
         super.setUp()
         CacheHelper.clear(key: "ProductListCacheKey")
@@ -13,7 +20,8 @@ final class ProductListViewModelTests: XCTestCase {
         super.tearDown()
     }
 
-    // MARK: - Initial
+    // MARK: - 1. Initial
+    // 首次加载：重点验证 page=1、products 写入、页面进入 content/error
 
     // initial 成功：更新列表，并进入 content 状态
     func testInitialSuccess_updatesProductsAndShowsContent() {
@@ -27,6 +35,7 @@ final class ProductListViewModelTests: XCTestCase {
         ]
         mockService.result = .success(makePageResponse(mockProducts))
 
+        // initial 应该请求第一页，并把返回数据写入列表
         viewModel.loadData(mode: .initial)
 
         XCTAssertEqual(mockService.requestedPage, 1)
@@ -40,7 +49,8 @@ final class ProductListViewModelTests: XCTestCase {
         XCTAssertTrue(outputSpy.didReceiveNoMoreDataFooterState)
     }
 
-    // MARK: - Refresh
+    // MARK: - 2. Refresh
+    // 下拉刷新：重点验证第一页新数据会替换旧列表，不受 noMoreData 限制
 
     // refresh 成功：用第一页新数据替换旧数据
     func testRefreshSuccess_replacesOldProducts() {
@@ -54,6 +64,7 @@ final class ProductListViewModelTests: XCTestCase {
         mockService.result = .success(makePageResponse(oldProducts))
         viewModel.loadData(mode: .initial)
 
+        // refresh 应该用第一页新数据替换旧列表，而不是 append
         let newProducts = [
             makeProduct(id: 3, title: "新标题3", body: "新内容3"),
             makeProduct(id: 4, title: "新标题4", body: "新内容4")
@@ -75,7 +86,8 @@ final class ProductListViewModelTests: XCTestCase {
         XCTAssertTrue(outputSpy.didReceiveNoMoreDataFooterState)
     }
 
-    // MARK: - Load More
+    // MARK: - 3. Load More
+    // 上拉加载：重点验证追加下一页，以及各种不该发请求的拦截场景
 
     // loadMore 成功：追加下一页数据
     func testLoadMoreSuccess_appendsNewProducts() {
@@ -88,6 +100,7 @@ final class ProductListViewModelTests: XCTestCase {
         mockService.result = .success(makePageResponse(oldProducts, page: 1, pageSize: 10, total: 12))
         viewModel.loadData(mode: .initial)
 
+        // loadMore 应该请求 currentPage + 1，并追加到第一页后面
         let newProducts = [
             makeProduct(id: 11, title: "第二页标题11", body: "第二页内容11"),
             makeProduct(id: 12, title: "第二页标题12", body: "第二页内容12")
@@ -111,7 +124,7 @@ final class ProductListViewModelTests: XCTestCase {
         XCTAssertTrue(outputSpy.didReceiveNoMoreDataFooterState)
     }
 
-    // loadMore 在没有更多数据时：应该被拒绝，不发起新请求
+    // 无更多数据时，loadMore 不应该继续请求下一页
     func testLoadMoreWhenNoMoreData_isRejected() {
         let mockService = MockProductService()
         let viewModel = makeViewModel(service: mockService)
@@ -123,11 +136,12 @@ final class ProductListViewModelTests: XCTestCase {
         mockService.result = .success(makePageResponse(oldProducts, page: 1, pageSize: 10, total: 2))
         viewModel.loadData(mode: .initial)
 
-        //清空请求 page 和 Size，
+        // 清空上一次请求记录，方便确认 loadMore 没有再次发起请求
         mockService.resetRequestRecord()
 
         viewModel.loadData(mode: .loadMore)
 
+        // 没有更多数据时，不应该触发新的 service 请求
         XCTAssertNil(mockService.requestedPage)
         XCTAssertNil(mockService.requestedPageSize)
         XCTAssertEqual(viewModel.products.count, 2)
@@ -135,7 +149,7 @@ final class ProductListViewModelTests: XCTestCase {
         assertProduct(viewModel.products.last, id: 2, title: "标题2", body: "内容2")
     }
 
-    // refresh 在没有更多数据时：仍然允许重新请求第一页
+    // noMoreData 只限制 loadMore，不限制 refresh
     func testRefreshAllowedWhenNoMoreData() {
         let mockService = MockProductService()
         let viewModel = makeViewModel(service: mockService)
@@ -152,6 +166,7 @@ final class ProductListViewModelTests: XCTestCase {
         ]
         mockService.result = .success(makePageResponse(newProducts, page: 1, pageSize: 10, total: 1))
 
+        // 即使已经没有更多数据，refresh 仍然允许重新请求第一页
         viewModel.loadData(mode: .refresh)
 
         XCTAssertEqual(mockService.requestedPage, 1)
@@ -162,19 +177,20 @@ final class ProductListViewModelTests: XCTestCase {
         XCTAssertFalse(viewModel.products.contains(where: { $0.id == 2 }))
     }
 
-    // loadMore 在没有基础数据时：应该被拒绝，避免 clearCache 后误触发 page 2
+    // 没有第一页基础数据时，loadMore 不应该直接请求 page 2
     func testLoadMoreWhenProductsIsEmpty_isRejected() {
         let mockService = MockProductService()
         let viewModel = makeViewModel(service: mockService)
 
         viewModel.loadData(mode: .loadMore)
 
+        // 没有第一页数据时，loadMore 不应该越过 initial 直接请求下一页
         XCTAssertNil(mockService.requestedPage)
         XCTAssertNil(mockService.requestedPageSize)
         XCTAssertEqual(viewModel.products.count, 0)
     }
 
-    // refreshing 中触发 loadMore：应该被拒绝，避免第一页重建时追加下一页
+    // refresh 未完成时，loadMore 应该被拦截
     func testLoadMoreWhileRefreshing_isRejected() {
         let mockService = MockProductService()
         let viewModel = makeViewModel(service: mockService)
@@ -189,17 +205,18 @@ final class ProductListViewModelTests: XCTestCase {
         mockService.result = .success(makePageResponse(oldProducts, page: 1, pageSize: 10, total: 20))
         viewModel.loadData(mode: .refresh)
         
-        //清空请求 page 和 Size，
+        // 清空 refresh 的请求记录，下面只验证 loadMore 是否被拦截
         mockService.resetRequestRecord()
 
         viewModel.loadData(mode: .loadMore)
 
+        // refresh 进行中时，loadMore 应该被入口优先级拦截
         XCTAssertNil(mockService.requestedPage)
         XCTAssertNil(mockService.requestedPageSize)
         XCTAssertEqual(viewModel.products.count, 10)
     }
 
-    // loadingMore 中重复触发 loadMore：应该被拒绝，避免重复请求同一页
+    // loadingMore 未完成时，重复 loadMore 应该被拦截
     func testRepeatedLoadMore_isRejected() {
         let mockService = MockProductService()
         let viewModel = makeViewModel(service: mockService)
@@ -216,17 +233,19 @@ final class ProductListViewModelTests: XCTestCase {
         ], page: 2, pageSize: 10, total: 20))
         viewModel.loadData(mode: .loadMore)
 
-        //清空请求 page 和 Size，
+        // 清空第一次 loadMore 的请求记录，下面只验证重复 loadMore 是否被拦截
         mockService.resetRequestRecord()
 
         viewModel.loadData(mode: .loadMore)
 
+        // 上一次 loadMore 未完成前，重复 loadMore 不应该再次发请求
         XCTAssertNil(mockService.requestedPage)
         XCTAssertNil(mockService.requestedPageSize)
         XCTAssertEqual(viewModel.products.count, 10)
     }
 
-    // MARK: - Failure
+    // MARK: - 4. Failure
+    // 失败分支：重点验证不同 LoadMode 失败后，旧数据和页面状态是否安全
 
     // initial 失败且无旧数据：进入 error 状态
     func testInitialFailureWithoutOldData_showsError() {
@@ -236,6 +255,7 @@ final class ProductListViewModelTests: XCTestCase {
 
         mockService.result = .failure(NetworkError.requestFailed(URLError(.notConnectedToInternet)))
 
+        // 首次加载失败且没有旧数据兜底时，页面应该进入 error
         viewModel.loadData(mode: .initial)
 
         XCTAssertEqual(mockService.requestedPage, 1)
@@ -261,6 +281,7 @@ final class ProductListViewModelTests: XCTestCase {
         mockService.result = .failure(NetworkError.requestFailed(URLError(.notConnectedToInternet)))
         let outputSpy = bindOutputSpy(to: viewModel)
 
+        // refresh 失败但已有旧数据时，保留列表，不切到整页 error
         viewModel.loadData(mode: .refresh)
 
         XCTAssertEqual(mockService.requestedPage, 1)
@@ -274,7 +295,7 @@ final class ProductListViewModelTests: XCTestCase {
         XCTAssertTrue(outputSpy.didReceiveNoMoreDataFooterState)
     }
 
-    // loadMore 失败：保留旧列表，不误判无更多数据
+    // loadMore 失败时，保留第一页数据，也不能误判 noMoreData
     func testLoadMoreFailureWithOldData_keepsOldProductsAndShowsMessage() {
         let mockService = MockProductService()
         let viewModel = makeViewModel(service: mockService)
@@ -288,6 +309,7 @@ final class ProductListViewModelTests: XCTestCase {
         mockService.result = .failure(NetworkError.requestFailed(URLError(.notConnectedToInternet)))
         let outputSpy = bindOutputSpy(to: viewModel)
 
+        // loadMore 失败只影响底部加载，不应该清空第一页数据
         viewModel.loadData(mode: .loadMore)
 
         XCTAssertEqual(mockService.requestedPage, 2)
@@ -301,7 +323,8 @@ final class ProductListViewModelTests: XCTestCase {
         XCTAssertFalse(outputSpy.didReceiveNoMoreDataFooterState)
     }
 
-    // MARK: - Update Product
+    // MARK: - 5. Update Product
+    // 详情保存回传：重点验证只更新匹配 id 的那一条数据
 
     // updateProduct 成功：只更新匹配 id 的数据
     func testUpdateProductSuccess_updatesMatchedProduct() {
@@ -323,6 +346,7 @@ final class ProductListViewModelTests: XCTestCase {
             callbackProducts = products
         }
 
+        // 详情页保存回传后，只更新 id 匹配的那一条
         let updatedIndex = viewModel.updateProduct(newProduct)
 
         XCTAssertEqual(updatedIndex, 1)
@@ -352,6 +376,7 @@ final class ProductListViewModelTests: XCTestCase {
             didCallOnProductsChanged = true
         }
 
+        // 找不到对应 id 时，不应该改动列表，也不应该触发刷新回调
         let updatedIndex = viewModel.updateProduct(notFoundProduct)
 
         XCTAssertNil(updatedIndex)
@@ -362,9 +387,10 @@ final class ProductListViewModelTests: XCTestCase {
         XCTAssertFalse(didCallOnProductsChanged)
     }
 
-    // MARK: - Cancelled
+    // MARK: - 6. Cancelled
+    // 取消请求：重点验证 cancelled 被静默忽略，不进入 error，也不清空旧数据
 
-    // cancelled：静默忽略，不污染列表和状态
+    // cancelled 属于主动取消，不应该当成普通失败展示
     func testCancelledRequest_doesNotPolluteState() {
         let mockService = MockProductService()
         let viewModel = makeViewModel(service: mockService)
@@ -379,6 +405,7 @@ final class ProductListViewModelTests: XCTestCase {
         mockService.result = .failure(NetworkError.cancelled)
         let outputSpy = bindOutputSpy(to: viewModel)
 
+        // cancelled 是主动取消，应该静默结束，不走普通失败 UI
         viewModel.loadData(mode: .refresh)
 
         XCTAssertEqual(mockService.requestedPage, 1)
@@ -391,9 +418,10 @@ final class ProductListViewModelTests: XCTestCase {
         XCTAssertFalse(outputSpy.didReceiveNoMoreDataFooterState)
     }
 
-    // MARK: - Concurrent Requests
+    // MARK: - 7. Concurrent Requests
+    // 并发安全：重点验证 ControlledMock 手动制造乱序返回时，旧请求不能写入新状态
 
-    // 旧请求晚回来：不能覆盖新请求的数据
+    // 两次 refresh 乱序返回：旧请求不能覆盖新请求
     func testOldRequestReturnsLater_shouldNotOverrideNewData() {
         let service = ControlledMockProductService()
         let viewModel = makeViewModel(service: service)
@@ -401,24 +429,28 @@ final class ProductListViewModelTests: XCTestCase {
         viewModel.loadData(mode: .refresh) // A
         viewModel.loadData(mode: .refresh) // B
 
+        // pendingRequests[0] = A，pendingRequests[1] = B
         XCTAssertEqual(service.pendingRequests.count, 2)
 
         let newData = makePageResponse([
             makeProduct(id: 2, title: "B", body: "新请求数据")
         ])
-        service.completeRequest(at: 1, with: .success(newData))
 
+        // 先让后发出的 B 返回，确认最新请求可以正常写入
+        service.completeRequest(at: 1, with: .success(newData))
         XCTAssertEqual(viewModel.products.first?.title, "B")
 
         let oldData = makePageResponse([
             makeProduct(id: 1, title: "A", body: "旧请求数据")
         ])
+
+        // 再让旧请求 A 返回，验证 requestID 会丢弃旧回调
         service.completeRequest(at: 0, with: .success(oldData))
 
         XCTAssertEqual(viewModel.products.first?.title, "B")
     }
 
-    // refresh 打断 loadMore：旧 loadMore 回来后不能追加到新列表
+    // refresh 打断 loadMore：旧 page 2 不能追加到新的 page 1
     func testRefreshCancelsLoadMore_oldLoadMoreShouldNotAppend() {
         let service = ControlledMockProductService()
         let viewModel = makeViewModel(service: service)
@@ -438,8 +470,8 @@ final class ProductListViewModelTests: XCTestCase {
         XCTAssertEqual(viewModel.products.count, 10)
         XCTAssertEqual(viewModel.products.first?.title, "第一页标题1")
 
-        viewModel.loadData(mode: .loadMore) // 旧 page 2，先发出但不完成
-        viewModel.loadData(mode: .refresh)  // 新 page 1，后发出
+        viewModel.loadData(mode: .loadMore) // pendingRequests[1]，旧 page 2
+        viewModel.loadData(mode: .refresh)  // pendingRequests[2]，新 page 1
 
         XCTAssertEqual(service.pendingRequests.count, 3)
 
@@ -449,6 +481,8 @@ final class ProductListViewModelTests: XCTestCase {
             pageSize: 10,
             total: 1
         )
+
+        // 先完成 refresh，新列表应该替换旧列表
         service.completeRequest(at: 2, with: .success(refreshData))
 
         XCTAssertEqual(viewModel.products.count, 1)
@@ -460,6 +494,8 @@ final class ProductListViewModelTests: XCTestCase {
             pageSize: 10,
             total: 20
         )
+
+        // 再完成旧 loadMore，验证它不会被追加到 refresh 后的新列表
         service.completeRequest(at: 1, with: .success(oldLoadMoreData))
 
         XCTAssertEqual(viewModel.products.count, 1)
@@ -467,7 +503,8 @@ final class ProductListViewModelTests: XCTestCase {
         XCTAssertFalse(viewModel.products.contains(where: { $0.id == 11 }))
     }
     
-    // MARK: - Helpers
+    // MARK: - 8. Helpers
+    // 测试辅助方法：统一处理测试数据、断言和 ViewModel 输出监听
 
     // 记录 ViewModel 输出，避免每个测试重复写回调监听
     private final class ViewModelOutputSpy {
