@@ -21,6 +21,7 @@
 		2B260D042F94F17900F95950 /* ProductDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B260D032F94F17900F95950 /* ProductDetailViewController.swift */; };
 		2B260D062F94F48B00F95950 /* ProductService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B260D052F94F48B00F95950 /* ProductService.swift */; };
 		2B3423062FC2DD6500D119EC /* HomeViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B3423052FC2DD6500D119EC /* HomeViewModel.swift */; };
+		2B3423082FC32DA600D119EC /* DeviceViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B3423072FC32DA600D119EC /* DeviceViewModel.swift */; };
 		2B3890DE2FBE01A200430A10 /* LocalConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B3890DD2FBE01A200430A10 /* LocalConfig.swift */; };
 		2B403BC92FAB649D00C84332 /* ProductServiceProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B403BC82FAB649D00C84332 /* ProductServiceProtocol.swift */; };
 		2B462D222F9111E200B19AFA /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B462D142F9111E200B19AFA /* AppDelegate.swift */; };
@@ -65,6 +66,7 @@
 		2B260D032F94F17900F95950 /* ProductDetailViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProductDetailViewController.swift; sourceTree = "<group>"; };
 		2B260D052F94F48B00F95950 /* ProductService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProductService.swift; sourceTree = "<group>"; };
 		2B3423052FC2DD6500D119EC /* HomeViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeViewModel.swift; sourceTree = "<group>"; };
+		2B3423072FC32DA600D119EC /* DeviceViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceViewModel.swift; sourceTree = "<group>"; };
 		2B3890DD2FBE01A200430A10 /* LocalConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalConfig.swift; sourceTree = "<group>"; };
 		2B403BC82FAB649D00C84332 /* ProductServiceProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProductServiceProtocol.swift; sourceTree = "<group>"; };
 		2B403BCE2FAB807F00C84332 /* DeviceManagerDemoTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DeviceManagerDemoTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -132,6 +134,7 @@
 				2B462D162F9111E200B19AFA /* DeviceCell.swift */,
 				2B462D182F9111E200B19AFA /* DeviceListViewController.swift */,
 				2B462D172F9111E200B19AFA /* DeviceDetailViewController.swift */,
+				2B3423072FC32DA600D119EC /* DeviceViewModel.swift */,
 			);
 			path = Device;
 			sourceTree = "<group>";
@@ -396,6 +399,7 @@
 				2B7D654B2FA7416700C9D900 /* ProductListViewModel.swift in Sources */,
 				2B0DAB952F9F88AE00C9BD5A /* ProductCell.swift in Sources */,
 				2B1B6CAB2FBCA75A005AA128 /* ApiResponse.swift in Sources */,
+				2B3423082FC32DA600D119EC /* DeviceViewModel.swift in Sources */,
 				2B1B6CAD2FBCA765005AA128 /* PageResponse.swift in Sources */,
 				2B3423062FC2DD6500D119EC /* HomeViewModel.swift in Sources */,
 				2B462D272F9111E200B19AFA /* SceneDelegate.swift in Sources */,

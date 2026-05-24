@@ -1,11 +1,9 @@
-
 //
 //  HomeViewModel.swift
 //  DeviceManagerDemo
 //
 //  Created by 天亮了 on 2026/5/24.
 //
-
 import Foundation
 
 /// HomeViewModel
@@ -28,6 +26,18 @@ final class HomeViewModel {
         case unreadCount
     }
     
+    /// 首页聚合状态。
+    ///
+    /// productList 是主接口，决定首页主状态。
+    /// 其他接口是副接口，只影响局部数据。
+    enum HomeLoadState: Equatable {
+        case idle
+        case loading
+        case content
+        case partialContent(String)
+        case failed(String)
+    }
+    
     // MARK: - Dependencies
     
     private let service: ProductServiceProtocol
@@ -36,6 +46,14 @@ final class HomeViewModel {
     
     private var taskMap: [RequestKey: URLSessionDataTask] = [:]
     private var requestIDMap: [RequestKey: UUID] = [:]
+    
+    /// 首页聚合请求 ID。
+    ///
+    /// loadHomeData() 每次都会生成新的 batchRequestID。
+    /// group.notify 回来时，如果不是当前批次，就丢弃旧结果。
+    private var batchRequestID = UUID()
+    
+    private(set) var loadState: HomeLoadState = .idle
     
     // MARK: - Data
     
@@ -64,6 +82,11 @@ final class HomeViewModel {
     /// HomeVC 可以在这里刷新 Header 或局部 UI。
     var onHomeDataChanged: (() -> Void)?
     
+    /// 首页聚合状态发生变化。
+    ///
+    /// HomeVC 可以用它展示 loading / 部分成功 / 主接口失败。
+    var onHomeStateChanged: ((HomeLoadState) -> Void)?
+    
     // MARK: - Init
     
     init(service: ProductServiceProtocol = ProductService()) {
@@ -80,25 +103,93 @@ final class HomeViewModel {
     ///
     /// 当前用于学习：
     /// 1. 多接口并发
-    /// 2. taskMap 独立管理 task
-    /// 3. requestIDMap 防旧回调污染
-    /// 4. 主接口 / 副接口失败策略分离
+    /// 2. DispatchGroup 等待五个请求完成
+    /// 3. taskMap 独立管理 task
+    /// 4. requestIDMap 防旧回调污染
+    /// 5. 主接口 / 副接口失败策略分离
     func loadHomeData() {
-        loadProductList()
-        loadUserInfo()
-        loadBanners()
-        loadRecommendProducts()
-        loadUnreadCount()
-    }
-    
-    /// 加载首页辅助接口。
-    ///
-    /// 这个方法不请求 productList，适合 HomeVC 只想刷新用户、Banner、推荐、未读数时使用。
-    func loadAuxiliaryData() {
-        loadUserInfo()
-        loadBanners()
-        loadRecommendProducts()
-        loadUnreadCount()
+        cancelAllRequests()
+        
+        let currentBatchID = UUID()
+        batchRequestID = currentBatchID
+        
+        updateLoadState(.loading)
+        
+        let group = DispatchGroup()
+        
+        var productResult: Result<PageResponse<Product>, NetworkError>?
+        var userInfoResult: Result<UserInfo, NetworkError>?
+        var bannerResult: Result<[Banner], NetworkError>?
+        var recommendResult: Result<[Product], NetworkError>?
+        var unreadResult: Result<UnreadCount, NetworkError>?
+        
+        group.enter()
+        startTrackedRequest(
+            key: .productList,
+            request: { [service] completion in
+                service.fetchList(page: 1, pageSize: 10, completion: completion)
+            },
+            completion: { result in
+                productResult = result
+                group.leave()
+            }
+        )
+        
+        group.enter()
+        startTrackedRequest(
+            key: .userInfo,
+            request: service.fetchUserInfo,
+            completion: { result in
+                userInfoResult = result
+                group.leave()
+            }
+        )
+        
+        group.enter()
+        startTrackedRequest(
+            key: .banner,
+            request: service.fetchBanners,
+            completion: { result in
+                bannerResult = result
+                group.leave()
+            }
+        )
+        
+        group.enter()
+        startTrackedRequest(
+            key: .recommendProducts,
+            request: service.fetchRecommendProducts,
+            completion: { result in
+                recommendResult = result
+                group.leave()
+            }
+        )
+        
+        group.enter()
+        startTrackedRequest(
+            key: .unreadCount,
+            request: service.fetchUnreadCount,
+            completion: { result in
+                unreadResult = result
+                group.leave()
+            }
+        )
+        
+        group.notify(queue: .main) { [weak self] in
+            guard let self = self else { return }
+            guard self.batchRequestID == currentBatchID else {
+                print("Home 丢弃旧批次请求回调")
+                return
+            }
+            
+            self.mergeHomeResults(
+                productResult: productResult,
+                userInfoResult: userInfoResult,
+                bannerResult: bannerResult,
+                recommendResult: recommendResult,
+                unreadResult: unreadResult
+            )
+        }
     }
     
     /// 取消所有首页请求。
@@ -108,96 +199,149 @@ final class HomeViewModel {
         }
         
         taskMap.removeAll()
+        batchRequestID = UUID()
         
         RequestKey.allCasesForHome.forEach { key in
             requestIDMap[key] = UUID()
         }
     }
     
-    // MARK: - Request Methods
+    // MARK: - Merge Strategy
     
-    private func loadProductList() {
-        startRequest(
-            key: .productList,
-            request: { [service] completion in
-                service.fetchList(page: 1, pageSize: 10, completion: completion)
-            },
-            success: { [weak self] pageData in
-                self?.homeProducts = pageData.list
-                print("Home productList 成功，数量: \(pageData.list.count)")
-            },
-            failure: { error in
-                print("Home productList 失败: \(error)")
+    /// 合并首页五个请求结果。
+    ///
+    /// 规则：
+    /// productList 是主接口。
+    /// - 主接口成功：首页可以 content。
+    /// - 主接口失败且没有旧数据：首页 failed。
+    /// - 主接口失败但已有旧数据：首页 partialContent，保留旧数据。
+    ///
+    /// 其他接口是副接口。
+    /// - 成功：更新局部数据。
+    /// - 失败：局部降级，不覆盖首页主状态。
+    private func mergeHomeResults(
+        productResult: Result<PageResponse<Product>, NetworkError>?,
+        userInfoResult: Result<UserInfo, NetworkError>?,
+        bannerResult: Result<[Banner], NetworkError>?,
+        recommendResult: Result<[Product], NetworkError>?,
+        unreadResult: Result<UnreadCount, NetworkError>?
+    ) {
+        var localFailedMessages: [String] = []
+        
+        switch productResult {
+        case .success(let pageData):
+            homeProducts = pageData.list
+            print("Home productList 成功，数量: \(pageData.list.count)")
+            
+        case .failure(let error):
+            print("Home productList 失败: \(error)")
+            
+            if homeProducts.isEmpty {
+                userInfo = nil
+                banners = []
+                recommendProducts = []
+                unreadCount = 0
+                updateLoadState(.failed("商品列表加载失败"))
+                onHomeDataChanged?()
+                return
+            } else {
+                localFailedMessages.append("商品列表刷新失败，已保留旧数据")
             }
-        )
-    }
-    
-    private func loadUserInfo() {
-        startRequest(
-            key: .userInfo,
-            request: service.fetchUserInfo,
-            success: { [weak self] userInfo in
-                self?.userInfo = userInfo
-                print("Home userInfo 成功: \(userInfo.name)")
-            },
-            failure: { error in
-                print("Home userInfo 失败: \(error)")
+            
+        case .none:
+            if homeProducts.isEmpty {
+                updateLoadState(.failed("商品列表无返回"))
+                onHomeDataChanged?()
+                return
+            } else {
+                localFailedMessages.append("商品列表无返回，已保留旧数据")
             }
-        )
-    }
-    
-    private func loadBanners() {
-        startRequest(
-            key: .banner,
-            request: service.fetchBanners,
-            success: { [weak self] banners in
-                self?.banners = banners
-                print("Home banner 成功，数量: \(banners.count)")
-            },
-            failure: { error in
-                print("Home banner 失败: \(error)")
-            }
-        )
-    }
-    
-    private func loadRecommendProducts() {
-        startRequest(
-            key: .recommendProducts,
-            request: service.fetchRecommendProducts,
-            success: { [weak self] products in
-                self?.recommendProducts = products
-                print("Home recommendProducts 成功，数量: \(products.count)")
-            },
-            failure: { error in
-                print("Home recommendProducts 失败: \(error)")
-            }
-        )
-    }
-    
-    private func loadUnreadCount() {
-        startRequest(
-            key: .unreadCount,
-            request: service.fetchUnreadCount,
-            success: { [weak self] unread in
-                self?.unreadCount = unread.count
-                print("Home unreadCount 成功: \(unread.count)")
-            },
-            failure: { error in
-                print("Home unreadCount 失败: \(error)")
-            }
-        )
+        }
+        
+        switch userInfoResult {
+        case .success(let userInfo):
+            self.userInfo = userInfo
+            print("Home userInfo 成功: \(userInfo.name)")
+            
+        case .failure(let error):
+            self.userInfo = nil
+            localFailedMessages.append("用户信息加载失败")
+            print("Home userInfo 失败: \(error)")
+            
+        case .none:
+            self.userInfo = nil
+            localFailedMessages.append("用户信息无返回")
+        }
+        
+        switch bannerResult {
+        case .success(let banners):
+            self.banners = banners
+            print("Home banner 成功，数量: \(banners.count)")
+            
+        case .failure(let error):
+            self.banners = []
+            localFailedMessages.append("Banner 加载失败")
+            print("Home banner 失败: \(error)")
+            
+        case .none:
+            self.banners = []
+            localFailedMessages.append("Banner 无返回")
+        }
+        
+        switch recommendResult {
+        case .success(let products):
+            self.recommendProducts = products
+            print("Home recommendProducts 成功，数量: \(products.count)")
+            
+        case .failure(let error):
+            self.recommendProducts = []
+            localFailedMessages.append("推荐商品加载失败")
+            print("Home recommendProducts 失败: \(error)")
+            
+        case .none:
+            self.recommendProducts = []
+            localFailedMessages.append("推荐商品无返回")
+        }
+        
+        switch unreadResult {
+        case .success(let unread):
+            unreadCount = unread.count
+            print("Home unreadCount 成功: \(unread.count)")
+            
+        case .failure(let error):
+            unreadCount = 0
+            localFailedMessages.append("未读数加载失败")
+            print("Home unreadCount 失败: \(error)")
+            
+        case .none:
+            unreadCount = 0
+            localFailedMessages.append("未读数无返回")
+        }
+        
+        if localFailedMessages.isEmpty {
+            updateLoadState(.content)
+        } else {
+            updateLoadState(.partialContent(localFailedMessages.joined(separator: "；")))
+        }
+        
+        onHomeDataChanged?()
     }
     
     // MARK: - Request Lifecycle
     
-    /// 通用请求启动方法。
+    /// 带 task / requestID 保护的底层请求方法。
     ///
-    /// 只负责请求生命周期管理，不关心具体业务数据写到哪里。
-    private func startRequest<T>(
+    /// 只负责：
+    /// 1. 取消同 key 旧请求
+    /// 2. 生成 requestID
+    /// 3. 丢弃旧回调
+    /// 4. 清理 taskMap
+    ///
+    /// 它不直接更新 UI，适合 DispatchGroup 聚合场景。
+    private func startTrackedRequest<T>(
         key: RequestKey,
         request: (@escaping (Result<T, NetworkError>) -> Void) -> URLSessionDataTask?,
-        success: @escaping (T) -> Void,
-        failure: @escaping (NetworkError) -> Void
+        completion: @escaping (Result<T, NetworkError>) -> Void
     ) {
         taskMap[key]?.cancel()
         
@@ -213,19 +357,15 @@ final class HomeViewModel {
             }
             
             self.taskMap[key] = nil
-            
-            switch result {
-            case .success(let value):
-                success(value)
-                
-            case .failure(let error):
-                failure(error)
-            }
-            
-            self.onHomeDataChanged?()
+            completion(result)
         }
         
         taskMap[key] = task
+    }
+    
+    private func updateLoadState(_ state: HomeLoadState) {
+        loadState = state
+        onHomeStateChanged?(state)
     }
 }
 

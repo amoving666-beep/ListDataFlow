@@ -293,6 +293,32 @@ final class HomeViewController: UIViewController {
             self.updateHeaderView()
             self.tableView.reloadData()
         }
+
+        homeViewModel.onHomeStateChanged = { [weak self] state in
+            guard let self = self else { return }
+
+            switch state {
+            case .idle:
+                self.statusTitleLabel.text = "首页辅助接口待加载"
+                self.statusSubtitleLabel.text = "等待 userInfo / banner / recommend / unreadCount"
+
+            case .loading:
+                self.statusTitleLabel.text = "首页辅助接口加载中"
+                self.statusSubtitleLabel.text = "正在并发请求 productList / userInfo / banner / recommend / unreadCount"
+
+            case .content:
+                self.statusTitleLabel.text = "接口状态：全部成功"
+                self.statusSubtitleLabel.text = "主接口成功，副接口也全部返回"
+
+            case .partialContent(let message):
+                self.statusTitleLabel.text = "接口状态：部分成功"
+                self.statusSubtitleLabel.text = message
+
+            case .failed(let message):
+                self.statusTitleLabel.text = "接口状态：主接口失败"
+                self.statusSubtitleLabel.text = message
+            }
+        }
     }
     
     private func loadHomeData() {
