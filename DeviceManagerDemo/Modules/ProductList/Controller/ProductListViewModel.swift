@@ -92,7 +92,6 @@ final class ProductListViewModel {
         onProductsChanged?(products)
         onViewStateChanged?(makeViewStateForCurrentList())
         onFooterStateChanged?(makeFooterStateForCurrentList())
-        print("读取缓存成功，缓存条数：\(cacheList.count)")
     }
 
     func clearCache() {
@@ -104,7 +103,6 @@ final class ProductListViewModel {
         onProductsChanged?(products)
         onViewStateChanged?(.empty("暂无数据"))
         onFooterStateChanged?(.hidden)
-        print("缓存已删除")
     }
 
     func printCacheInfo() {
@@ -149,7 +147,6 @@ final class ProductListViewModel {
             switch result {
             case .success(let pageData):
                 self.handleLoadSuccess(pageData, mode: mode, targetPage: targetPage)
-
             case .failure(let error):
                 self.handleLoadFailure(error)
             }
@@ -170,13 +167,11 @@ final class ProductListViewModel {
         loadState = .idle
         onFooterStateChanged?(makeFooterStateForCurrentList())
 
-        print("下拉刷新触发：取消旧请求，准备重新请求第一页")
     }
     
     @discardableResult
     func updateProduct(_ newProduct: Product) -> Int? {
         guard let index = products.firstIndex(where: { $0.id == newProduct.id }) else {
-            print("保存失败：列表中找不到 id = \(newProduct.id) 的数据")
             return nil
         }
 
@@ -196,19 +191,14 @@ final class ProductListViewModel {
     // MARK: - Private Loading Logic
 
     private func canLoadData(mode: LoadMode) -> Bool {
-        print("进入 canLoadData，mode: \(mode), loadState: \(loadState), hasMoreData: \(hasMoreData)")
-
         if loadState != .idle {
-            print("拦截：当前已有请求进行中，loadState = \(loadState)")
             return false
         }
 
         if mode == .loadMore && !hasMoreData {
-            print("拦截：没有更多数据")
             return false
         }
 
-        print("允许请求")
         return true
     }
 
@@ -275,19 +265,14 @@ final class ProductListViewModel {
             onCanCheckAutoLoadMore?()
         }
 
-        print("当前页: \(currentPage), 当前总条数: \(products.count), 服务端总条数: \(pageData.total), 是否还有更多: \(hasMoreData)")
     }
 
     private func handleLoadFailure(_ error: Error) {
         
         if let networkError = error as? NetworkError,
            case .cancelled = networkError {
-            print("请求已取消，静默忽略")
             return
         }
-
-        print("请求失败 error:", error)
-        print("请求失败描述:", error.localizedDescription)
 
         if products.isEmpty {
             onViewStateChanged?(.error("网络异常，请稍后重试"))

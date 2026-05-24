@@ -89,15 +89,30 @@ final class HomeViewController: UIViewController {
     private let bannerTitleLabel = UILabel()
     private let bannerSubtitleLabel = UILabel()
     private let recommendTitleLabel = UILabel()
+    private var didSetupHeaderView = false
     
     private static let cellIdentifier = "HomeEntryCell"
     
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
-        setupHeaderView()
         bindHomeViewModel()
         loadHomeData()
+    }
+
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+
+        guard tableView.bounds.width > 0 else {
+            return
+        }
+
+        if !didSetupHeaderView {
+            setupHeaderView()
+            didSetupHeaderView = true
+        }
+
+        updateTableHeaderLayoutIfNeeded()
     }
     
     private func setupUI() {
@@ -118,7 +133,7 @@ final class HomeViewController: UIViewController {
 
     private func setupHeaderView() {
         headerContainerView.backgroundColor = .clear
-        headerContainerView.frame = CGRect(x: 0, y: 0, width: view.bounds.width, height: 285)
+        headerContainerView.frame = CGRect(x: 0, y: 0, width: tableView.bounds.width, height: 285)
         
         projectTitleLabel.font = .systemFont(ofSize: 25, weight: .bold)
         projectTitleLabel.textColor = .label
@@ -244,6 +259,32 @@ final class HomeViewController: UIViewController {
         
         tableView.tableHeaderView = headerContainerView
     }
+
+    private func updateTableHeaderLayoutIfNeeded() {
+        guard tableView.tableHeaderView === headerContainerView else {
+            return
+        }
+
+        let targetWidth = tableView.bounds.width
+        guard targetWidth > 0 else {
+            return
+        }
+
+        let targetSize = CGSize(width: targetWidth, height: UIView.layoutFittingCompressedSize.height)
+        let fittingSize = headerContainerView.systemLayoutSizeFitting(
+            targetSize,
+            withHorizontalFittingPriority: .required,
+            verticalFittingPriority: .fittingSizeLevel
+        )
+
+        let targetHeight = max(285, fittingSize.height)
+        guard headerContainerView.frame.width != targetWidth || headerContainerView.frame.height != targetHeight else {
+            return
+        }
+
+        headerContainerView.frame = CGRect(x: 0, y: 0, width: targetWidth, height: targetHeight)
+        tableView.tableHeaderView = headerContainerView
+    }
     
     private func bindHomeViewModel() {
         homeViewModel.onHomeDataChanged = { [weak self] in
@@ -285,6 +326,7 @@ final class HomeViewController: UIViewController {
         } else {
             recommendTitleLabel.text = "推荐商品：暂无数据"
         }
+        updateTableHeaderLayoutIfNeeded()
     }
     
     private func openEntry(_ entry: DemoEntry) {

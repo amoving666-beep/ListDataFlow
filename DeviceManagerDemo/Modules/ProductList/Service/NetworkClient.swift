@@ -106,6 +106,21 @@ final class NetworkClient {
             }
 
             do {
+                if let jsonObject = try? JSONSerialization.jsonObject(with: data),
+                   let prettyData = try? JSONSerialization.data(
+                    withJSONObject: jsonObject,
+                    options: [.prettyPrinted, .sortedKeys]
+                   ),
+                   let prettyJSONString = String(data: prettyData, encoding: .utf8) {
+                    print("""
+                    接口响应:
+                    method: \(request.httpMethod ?? "UNKNOWN")
+                    url: \(request.url?.absoluteString ?? "UNKNOWN")
+                    json:
+                    \(prettyJSONString)
+                    """)
+                }
+                
                 // 6. 注意：真实业务接口不是直接解 T，而是先解统一外壳 ApiResponse<T>。
                 let apiResponse = try JSONDecoder().decode(ApiResponse<T>.self, from: data)
 
