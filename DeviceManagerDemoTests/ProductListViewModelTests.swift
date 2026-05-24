@@ -391,6 +391,82 @@ final class ProductListViewModelTests: XCTestCase {
         XCTAssertFalse(outputSpy.didReceiveNoMoreDataFooterState)
     }
 
+    // MARK: - Concurrent Requests
+
+    // 旧请求晚回来：不能覆盖新请求的数据
+    func testOldRequestReturnsLater_shouldNotOverrideNewData() {
+        let service = ControlledMockProductService()
+        let viewModel = makeViewModel(service: service)
+
+        viewModel.loadData(mode: .refresh) // A
+        viewModel.loadData(mode: .refresh) // B
+
+        XCTAssertEqual(service.pendingRequests.count, 2)
+
+        let newData = makePageResponse([
+            makeProduct(id: 2, title: "B", body: "新请求数据")
+        ])
+        service.completeRequest(at: 1, with: .success(newData))
+
+        XCTAssertEqual(viewModel.products.first?.title, "B")
+
+        let oldData = makePageResponse([
+            makeProduct(id: 1, title: "A", body: "旧请求数据")
+        ])
+        service.completeRequest(at: 0, with: .success(oldData))
+
+        XCTAssertEqual(viewModel.products.first?.title, "B")
+    }
+
+    // refresh 打断 loadMore：旧 loadMore 回来后不能追加到新列表
+    func testRefreshCancelsLoadMore_oldLoadMoreShouldNotAppend() {
+        let service = ControlledMockProductService()
+        let viewModel = makeViewModel(service: service)
+
+        viewModel.loadData(mode: .initial)
+
+        let page1Data = makePageResponse(
+            (1...10).map {
+                makeProduct(id: $0, title: "第一页标题\($0)", body: "第一页内容\($0)")
+            },
+            page: 1,
+            pageSize: 10,
+            total: 20
+        )
+        service.completeRequest(at: 0, with: .success(page1Data))
+
+        XCTAssertEqual(viewModel.products.count, 10)
+        XCTAssertEqual(viewModel.products.first?.title, "第一页标题1")
+
+        viewModel.loadData(mode: .loadMore) // 旧 page 2，先发出但不完成
+        viewModel.loadData(mode: .refresh)  // 新 page 1，后发出
+
+        XCTAssertEqual(service.pendingRequests.count, 3)
+
+        let refreshData = makePageResponse(
+            [makeProduct(id: 100, title: "刷新后的第一页", body: "刷新后的内容")],
+            page: 1,
+            pageSize: 10,
+            total: 1
+        )
+        service.completeRequest(at: 2, with: .success(refreshData))
+
+        XCTAssertEqual(viewModel.products.count, 1)
+        XCTAssertEqual(viewModel.products.first?.title, "刷新后的第一页")
+
+        let oldLoadMoreData = makePageResponse(
+            [makeProduct(id: 11, title: "旧第二页标题11", body: "旧第二页内容11")],
+            page: 2,
+            pageSize: 10,
+            total: 20
+        )
+        service.completeRequest(at: 1, with: .success(oldLoadMoreData))
+
+        XCTAssertEqual(viewModel.products.count, 1)
+        XCTAssertEqual(viewModel.products.first?.title, "刷新后的第一页")
+        XCTAssertFalse(viewModel.products.contains(where: { $0.id == 11 }))
+    }
+    
     // MARK: - Helpers
 
     // 记录 ViewModel 输出，避免每个测试重复写回调监听

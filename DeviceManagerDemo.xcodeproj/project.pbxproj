@@ -22,6 +22,10 @@
 		2B260D062F94F48B00F95950 /* ProductService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B260D052F94F48B00F95950 /* ProductService.swift */; };
 		2B3423062FC2DD6500D119EC /* HomeViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B3423052FC2DD6500D119EC /* HomeViewModel.swift */; };
 		2B3423082FC32DA600D119EC /* DeviceViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B3423072FC32DA600D119EC /* DeviceViewModel.swift */; };
+		2B3423102FC33B6200D119EC /* ControlledMockProductService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B34230B2FC33B6200D119EC /* ControlledMockProductService.swift */; };
+		2B3423112FC33B6200D119EC /* DeviceManagerDemoTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B34230C2FC33B6200D119EC /* DeviceManagerDemoTests.swift */; };
+		2B3423122FC33B6200D119EC /* MockProductService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B34230D2FC33B6200D119EC /* MockProductService.swift */; };
+		2B3423132FC33B6200D119EC /* ProductListViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B34230E2FC33B6200D119EC /* ProductListViewModelTests.swift */; };
 		2B3890DE2FBE01A200430A10 /* LocalConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B3890DD2FBE01A200430A10 /* LocalConfig.swift */; };
 		2B403BC92FAB649D00C84332 /* ProductServiceProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B403BC82FAB649D00C84332 /* ProductServiceProtocol.swift */; };
 		2B462D222F9111E200B19AFA /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B462D142F9111E200B19AFA /* AppDelegate.swift */; };
@@ -67,6 +71,10 @@
 		2B260D052F94F48B00F95950 /* ProductService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProductService.swift; sourceTree = "<group>"; };
 		2B3423052FC2DD6500D119EC /* HomeViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeViewModel.swift; sourceTree = "<group>"; };
 		2B3423072FC32DA600D119EC /* DeviceViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceViewModel.swift; sourceTree = "<group>"; };
+		2B34230B2FC33B6200D119EC /* ControlledMockProductService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ControlledMockProductService.swift; sourceTree = "<group>"; };
+		2B34230C2FC33B6200D119EC /* DeviceManagerDemoTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceManagerDemoTests.swift; sourceTree = "<group>"; };
+		2B34230D2FC33B6200D119EC /* MockProductService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockProductService.swift; sourceTree = "<group>"; };
+		2B34230E2FC33B6200D119EC /* ProductListViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProductListViewModelTests.swift; sourceTree = "<group>"; };
 		2B3890DD2FBE01A200430A10 /* LocalConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalConfig.swift; sourceTree = "<group>"; };
 		2B403BC82FAB649D00C84332 /* ProductServiceProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProductServiceProtocol.swift; sourceTree = "<group>"; };
 		2B403BCE2FAB807F00C84332 /* DeviceManagerDemoTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DeviceManagerDemoTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -92,14 +100,6 @@
 		2BD85EC62FB61D0B001E4DF8 /* detail-page.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "detail-page.png"; sourceTree = "<group>"; };
 		2BD85EC72FB61D11001E4DF8 /* unit-tests.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "unit-tests.png"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
-
-/* Begin PBXFileSystemSynchronizedRootGroup section */
-		2B403BCF2FAB807F00C84332 /* DeviceManagerDemoTests */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = DeviceManagerDemoTests;
-			sourceTree = "<group>";
-		};
-/* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		2B403BCB2FAB807F00C84332 /* Frameworks */ = {
@@ -214,13 +214,24 @@
 			path = Home;
 			sourceTree = "<group>";
 		};
+		2B34230F2FC33B6200D119EC /* DeviceManagerDemoTests */ = {
+			isa = PBXGroup;
+			children = (
+				2B34230C2FC33B6200D119EC /* DeviceManagerDemoTests.swift */,
+				2B34230D2FC33B6200D119EC /* MockProductService.swift */,
+				2B34230B2FC33B6200D119EC /* ControlledMockProductService.swift */,
+				2B34230E2FC33B6200D119EC /* ProductListViewModelTests.swift */,
+			);
+			path = DeviceManagerDemoTests;
+			sourceTree = "<group>";
+		};
 		2B462CEB2F910DD900B19AFA = {
 			isa = PBXGroup;
 			children = (
 				2B403BE12FAB9D5700C84332 /* DeviceManagerDemo.xctestplan */,
 				2B462D212F9111E200B19AFA /* DeviceManagerDemo */,
 				2BD85EC42FB61C56001E4DF8 /* Screenshots */,
-				2B403BCF2FAB807F00C84332 /* DeviceManagerDemoTests */,
+				2B34230F2FC33B6200D119EC /* DeviceManagerDemoTests */,
 				2B462CF52F910DD900B19AFA /* Products */,
 			);
 			sourceTree = "<group>";
@@ -276,9 +287,6 @@
 			);
 			dependencies = (
 				2B403BD32FAB807F00C84332 /* PBXTargetDependency */,
-			);
-			fileSystemSynchronizedGroups = (
-				2B403BCF2FAB807F00C84332 /* DeviceManagerDemoTests */,
 			);
 			name = DeviceManagerDemoTests;
 			packageProductDependencies = (
@@ -370,6 +378,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2B3423102FC33B6200D119EC /* ControlledMockProductService.swift in Sources */,
+				2B3423112FC33B6200D119EC /* DeviceManagerDemoTests.swift in Sources */,
+				2B3423122FC33B6200D119EC /* MockProductService.swift in Sources */,
+				2B3423132FC33B6200D119EC /* ProductListViewModelTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
