@@ -73,7 +73,7 @@ final class ProductListViewController: UIViewController {
         /// 先展示缓存兜底，再请求第一页刷新数据。
         viewModel.loadCache()
         viewModel.loadData(mode: .initial)
-        viewModel.loadHomeDataForDemo()
+    
     }
     
     deinit {

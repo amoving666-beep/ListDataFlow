@@ -31,29 +31,13 @@ final class ProductListViewModel {
         case loadingMore
     }
 
-    enum RequestKey {
+    private enum RequestKey {
         case productList
-        case userInfo
-        case banner
-        case recommendProducts
-        case unreadCount
     }
     
     // MARK: - State
 
     private(set) var products: [Product] = []
-
-    /// 用户信息。
-    private(set) var userInfo: UserInfo?
-
-    /// Banner 数据。
-    private(set) var banners: [Banner] = []
-
-    /// 推荐商品。
-    private(set) var recommendProducts: [Product] = []
-
-    /// 未读消息数。
-    private(set) var unreadCount: Int = 0
 
     private var currentPage: Int = 1
     private let pageSize: Int = 10
@@ -86,12 +70,6 @@ final class ProductListViewModel {
     var onViewStateChanged: ((ViewState) -> Void)?
 
     var onFooterStateChanged: ((FooterState) -> Void)?
-
-    /// 并发 Demo 数据更新回调。
-    ///
-    /// 当前先不接复杂 UI，
-    /// 这里只用于观察五个接口并发返回结果。
-    var onDemoDataChanged: (() -> Void)?
 
     /// 通知 VC：本次真实网络请求已经成功刷新列表，
     /// 可以检查内容高度是否不足一屏，必要时自动补一次 loadMore。
@@ -213,195 +191,6 @@ final class ProductListViewModel {
         taskMap[.productList]?.cancel()
         taskMap[.productList] = nil
         requestIDMap[.productList] = UUID()
-    }
-
-    // MARK: - Concurrent Request Demo
-
-    /// 五接口并发请求 Demo。
-    ///
-    /// 当前目标：
-    /// 1. 验证多个请求可以同时进行
-    /// 2. 验证 taskMap 不会互相覆盖
-    /// 3. 验证 requestIDMap 不会互相污染
-    /// 4. 验证副接口失败不影响主接口
-    ///
-    /// 注意：
-    /// 这里暂时不接正式 UI，
-    /// 主要用于学习并发请求管理。
-    func loadHomeDataForDemo() {
-        loadProductListForDemo()
-        loadUserInfoForDemo()
-        loadBannersForDemo()
-        loadRecommendProductsForDemo()
-        loadUnreadCountForDemo()
-    }
-
-    private func loadProductListForDemo() {
-        let requestKey = RequestKey.productList
-
-        taskMap[requestKey]?.cancel()
-
-        let requestID = UUID()
-        requestIDMap[requestKey] = requestID
-
-        let task = service.fetchList(page: 1, pageSize: pageSize) { [weak self] result in
-            guard let self = self else { return }
-
-            guard requestID == self.requestIDMap[requestKey] else {
-                print("丢弃旧 productList 回调")
-                return
-            }
-
-            self.taskMap[requestKey] = nil
-
-            switch result {
-            case .success(let pageData):
-                self.products = pageData.list
-                self.currentPage = pageData.page
-                self.hasMoreData = self.products.count < pageData.total
-
-                print("productList 成功，数量: \(pageData.list.count)")
-
-            case .failure(let error):
-                print("productList 失败: \(error)")
-            }
-
-            self.onDemoDataChanged?()
-        }
-
-        taskMap[requestKey] = task
-    }
-
-    private func loadUserInfoForDemo() {
-        let requestKey = RequestKey.userInfo
-
-        taskMap[requestKey]?.cancel()
-
-        let requestID = UUID()
-        requestIDMap[requestKey] = requestID
-
-        let task = service.fetchUserInfo { [weak self] result in
-            guard let self = self else { return }
-
-            guard requestID == self.requestIDMap[requestKey] else {
-                print("丢弃旧 userInfo 回调")
-                return
-            }
-
-            self.taskMap[requestKey] = nil
-
-            switch result {
-            case .success(let userInfo):
-                self.userInfo = userInfo
-                print("userInfo 成功: \(userInfo.name)")
-
-            case .failure(let error):
-                print("userInfo 失败: \(error)")
-            }
-
-            self.onDemoDataChanged?()
-        }
-
-        taskMap[requestKey] = task
-    }
-
-    private func loadBannersForDemo() {
-        let requestKey = RequestKey.banner
-
-        taskMap[requestKey]?.cancel()
-
-        let requestID = UUID()
-        requestIDMap[requestKey] = requestID
-
-        let task = service.fetchBanners { [weak self] result in
-            guard let self = self else { return }
-
-            guard requestID == self.requestIDMap[requestKey] else {
-                print("丢弃旧 banner 回调")
-                return
-            }
-
-            self.taskMap[requestKey] = nil
-
-            switch result {
-            case .success(let banners):
-                self.banners = banners
-                print("banner 成功，数量: \(banners.count)")
-
-            case .failure(let error):
-                print("banner 失败: \(error)")
-            }
-
-            self.onDemoDataChanged?()
-        }
-
-        taskMap[requestKey] = task
-    }
-
-    private func loadRecommendProductsForDemo() {
-        let requestKey = RequestKey.recommendProducts
-
-        taskMap[requestKey]?.cancel()
-
-        let requestID = UUID()
-        requestIDMap[requestKey] = requestID
-
-        let task = service.fetchRecommendProducts { [weak self] result in
-            guard let self = self else { return }
-
-            guard requestID == self.requestIDMap[requestKey] else {
-                print("丢弃旧 recommendProducts 回调")
-                return
-            }
-
-            self.taskMap[requestKey] = nil
-
-            switch result {
-            case .success(let products):
-                self.recommendProducts = products
-                print("recommendProducts 成功，数量: \(products.count)")
-
-            case .failure(let error):
-                print("recommendProducts 失败: \(error)")
-            }
-
-            self.onDemoDataChanged?()
-        }
-
-        taskMap[requestKey] = task
-    }
-
-    private func loadUnreadCountForDemo() {
-        let requestKey = RequestKey.unreadCount
-
-        taskMap[requestKey]?.cancel()
-
-        let requestID = UUID()
-        requestIDMap[requestKey] = requestID
-
-        let task = service.fetchUnreadCount { [weak self] result in
-            guard let self = self else { return }
-
-            guard requestID == self.requestIDMap[requestKey] else {
-                print("丢弃旧 unreadCount 回调")
-                return
-            }
-
-            self.taskMap[requestKey] = nil
-
-            switch result {
-            case .success(let unread):
-                self.unreadCount = unread.count
-                print("unreadCount 成功: \(unread.count)")
-
-            case .failure(let error):
-                print("unreadCount 失败: \(error)")
-            }
-
-            self.onDemoDataChanged?()
-        }
-
-        taskMap[requestKey] = task
     }
 
     // MARK: - Private Loading Logic
