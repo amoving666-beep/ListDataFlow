@@ -57,7 +57,7 @@ final class ProductListViewModel {
     
     init(
         service: ProductServiceProtocol = ProductService(),
-        cacheStore: ProductCacheStoreProtocol = UserDefaultsProductCacheStore()
+        cacheStore: ProductCacheStoreProtocol = FileProductCacheStore()
     ) {
         self.service = service
         self.cacheStore = cacheStore
