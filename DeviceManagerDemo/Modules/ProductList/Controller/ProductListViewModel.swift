@@ -47,15 +47,20 @@ final class ProductListViewModel {
     private var requestIDMap: [RequestKey: UUID] = [:]
     
     private var hasMoreData: Bool = true
-    private let cacheKey = "ProductListCacheKey"
+    private var totalCount: Int = 0
 
     /// ViewModel 依赖协议而不是具体网络实现，便于测试注入 Mock。
     private let service: ProductServiceProtocol
+
+    /// ViewModel 只依赖缓存协议，不直接依赖 CacheHelper / UserDefaults。
+    private let cacheStore: ProductCacheStoreProtocol
     
-    init(service: ProductServiceProtocol = ProductService()) {
-
+    init(
+        service: ProductServiceProtocol = ProductService(),
+        cacheStore: ProductCacheStoreProtocol = UserDefaultsProductCacheStore()
+    ) {
         self.service = service
-
+        self.cacheStore = cacheStore
     }
     
     /// 暴露给 VC 的分页边界，避免滚动层直接依赖内部状态机。
@@ -82,22 +87,38 @@ final class ProductListViewModel {
     // MARK: - Public Methods
 
     func loadCache() {
-        guard let cacheList = CacheHelper.load(key: cacheKey, as: [Product].self) else {
+        do {
+            guard let cachedPage = try cacheStore.loadPageResponse() else {
+                onViewStateChanged?(.empty("暂无数据"))
+                onFooterStateChanged?(.hidden)
+                return
+            }
+
+            products = cachedPage.list
+            currentPage = cachedPage.page
+            totalCount = cachedPage.total
+            hasMoreData = products.count < totalCount
+
+            onProductsChanged?(products)
+            onViewStateChanged?(makeViewStateForCurrentList())
+            onFooterStateChanged?(makeFooterStateForCurrentList())
+        } catch {
+            print("缓存读取失败：\(error.localizedDescription)")
             onViewStateChanged?(.empty("暂无数据"))
             onFooterStateChanged?(.hidden)
-            return
         }
-
-        products = cacheList
-        onProductsChanged?(products)
-        onViewStateChanged?(makeViewStateForCurrentList())
-        onFooterStateChanged?(makeFooterStateForCurrentList())
     }
 
     func clearCache() {
-        CacheHelper.clear(key: cacheKey)
+        do {
+            try cacheStore.clear()
+        } catch {
+            print("缓存清理失败：\(error.localizedDescription)")
+        }
+
         products.removeAll()
         currentPage = 1
+        totalCount = 0
         hasMoreData = false
 
         onProductsChanged?(products)
@@ -106,12 +127,16 @@ final class ProductListViewModel {
     }
 
     func printCacheInfo() {
-        guard let cacheList = CacheHelper.load(key: cacheKey, as: [Product].self) else {
-            print("无缓存")
-            return
-        }
+        do {
+            guard let cachedPage = try cacheStore.loadPageResponse() else {
+                print("无缓存")
+                return
+            }
 
-        print("读取缓存成功，缓存条数：\(cacheList.count)")
+            print("读取缓存成功，缓存条数：\(cachedPage.list.count)，当前页：\(cachedPage.page)，总数：\(cachedPage.total)")
+        } catch {
+            print("缓存读取失败：\(error.localizedDescription)")
+        }
     }
 
     func loadData(mode: LoadMode) {
@@ -273,8 +298,9 @@ final class ProductListViewModel {
         }
 
         // 真实分页接口会返回 total，比单纯依赖 list.count == pageSize 更可靠。
-        // products.count 表示当前已经成功展示的总条数，pageData.total 表示服务端总条数。
-        hasMoreData = products.count < pageData.total
+        // products.count 表示当前已经成功展示的总条数，totalCount 表示服务端总条数。
+        totalCount = pageData.total
+        hasMoreData = products.count < totalCount
         saveCache()
 
         onProductsChanged?(products)
@@ -309,7 +335,18 @@ final class ProductListViewModel {
     // MARK: - Cache
 
     private func saveCache() {
-        CacheHelper.save(products, key: cacheKey)
+        let pageResponse = PageResponse(
+            list: products,
+            page: currentPage,
+            pageSize: pageSize,
+            total: totalCount
+        )
+
+        do {
+            try cacheStore.savePageResponse(pageResponse)
+        } catch {
+            print("缓存保存失败：\(error.localizedDescription)")
+        }
     }
 
     // MARK: - State Makers

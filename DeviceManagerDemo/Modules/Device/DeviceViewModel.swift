@@ -68,12 +68,6 @@ final class DeviceViewModel {
     // MARK: - Public Methods
     
     /// 加载首页五个接口。
-    ///
-    /// 当前用于学习：
-    /// 1. 多接口并发
-    /// 2. taskMap 独立管理 task
-    /// 3. requestIDMap 防旧回调污染
-    /// 4. 主接口 / 副接口失败策略分离
     func loadHomeData() {
         loadProductList()
         loadUserInfo()

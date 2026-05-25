@@ -30,6 +30,13 @@ final class NetworkClient {
     /// 例如：`https://api.xxx.com`
     private let baseURL = "https://lgvajryebsdxjnvvgvsl.supabase.co"
 
+    private lazy var session: URLSession = {
+        let configuration = URLSessionConfiguration.default
+        configuration.timeoutIntervalForRequest = 15
+        configuration.timeoutIntervalForResource = 30
+        return URLSession(configuration: configuration)
+    }()
+
     /// 发起一个通用网络请求。
     ///
     /// - Parameters:
@@ -57,7 +64,7 @@ final class NetworkClient {
             return nil
         }
 
-        let task = URLSession.shared.dataTask(with: request) { data, response, error in
+        let task = session.dataTask(with: request) { data, response, error in
             // 1. 判断 URLSession 系统错误，例如断网、超时、DNS 失败。
             if let error = error {
                 DispatchQueue.main.async {

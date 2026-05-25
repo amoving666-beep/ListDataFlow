@@ -12,11 +12,11 @@ final class ProductListViewModelTests: XCTestCase {
 
     override func setUp() {
         super.setUp()
-        CacheHelper.clear(key: "ProductListCacheKey")
+        try? UserDefaultsProductCacheStore().clear()
     }
 
     override func tearDown() {
-        CacheHelper.clear(key: "ProductListCacheKey")
+        try? UserDefaultsProductCacheStore().clear()
         super.tearDown()
     }
 
@@ -387,7 +387,43 @@ final class ProductListViewModelTests: XCTestCase {
         XCTAssertFalse(didCallOnProductsChanged)
     }
 
-    // MARK: - 6. Cancelled
+    // MARK: - 6. Cache Store
+    // 缓存协议注入：验证 ViewModel 依赖 ProductCacheStoreProtocol，而不是直接依赖 CacheHelper
+
+    // 网络成功后：应通过 cacheStore 保存分页缓存
+    func testInitialSuccess_savesPageResponseToCacheStore() {
+        let mockService = MockProductService()
+        let mockCacheStore = MockProductCacheStore()
+        let viewModel = makeViewModel(service: mockService, cacheStore: mockCacheStore)
+
+        let products = [
+            makeProduct(id: 1, title: "标题1", body: "内容1"),
+            makeProduct(id: 2, title: "标题2", body: "内容2")
+        ]
+        mockService.result = .success(makePageResponse(products, page: 1, pageSize: 10, total: 20))
+
+        viewModel.loadData(mode: .initial)
+
+        XCTAssertEqual(mockCacheStore.savePageResponseCallCount, 1)
+        XCTAssertEqual(mockCacheStore.savedPageResponse?.list.count, 2)
+        XCTAssertEqual(mockCacheStore.savedPageResponse?.page, 1)
+        XCTAssertEqual(mockCacheStore.savedPageResponse?.pageSize, 10)
+        XCTAssertEqual(mockCacheStore.savedPageResponse?.total, 20)
+    }
+
+    // clearCache：应通过 cacheStore 清理缓存
+    func testClearCache_callsCacheStoreClear() {
+        let mockService = MockProductService()
+        let mockCacheStore = MockProductCacheStore()
+        let viewModel = makeViewModel(service: mockService, cacheStore: mockCacheStore)
+
+        viewModel.clearCache()
+
+        XCTAssertEqual(mockCacheStore.clearCallCount, 1)
+        XCTAssertEqual(viewModel.products.count, 0)
+    }
+
+    // MARK: - 7. Cancelled
     // 取消请求：重点验证 cancelled 被静默忽略，不进入 error，也不清空旧数据
 
     // cancelled 属于主动取消，不应该当成普通失败展示
@@ -418,7 +454,7 @@ final class ProductListViewModelTests: XCTestCase {
         XCTAssertFalse(outputSpy.didReceiveNoMoreDataFooterState)
     }
 
-    // MARK: - 7. Concurrent Requests
+    // MARK: - 8. Concurrent Requests
     // 并发安全：重点验证 ControlledMock 手动制造乱序返回时，旧请求不能写入新状态
 
     // 两次 refresh 乱序返回：旧请求不能覆盖新请求
@@ -503,7 +539,7 @@ final class ProductListViewModelTests: XCTestCase {
         XCTAssertFalse(viewModel.products.contains(where: { $0.id == 11 }))
     }
     
-    // MARK: - 8. Helpers
+    // MARK: - 9. Helpers
     // 测试辅助方法：统一处理测试数据、断言和 ViewModel 输出监听
 
     // 记录 ViewModel 输出，避免每个测试重复写回调监听
@@ -521,6 +557,29 @@ final class ProductListViewModelTests: XCTestCase {
         func recordProductsChanged(_ products: [Product]) {
             productsChangedCallCount += 1
             lastProducts = products
+        }
+    }
+
+    // 测试用缓存实现：只记录调用，不碰真实 UserDefaults
+    private final class MockProductCacheStore: ProductCacheStoreProtocol {
+        var savePageResponseCallCount = 0
+        var loadPageResponseCallCount = 0
+        var clearCallCount = 0
+        var savedPageResponse: PageResponse<Product>?
+        var pageResponseToLoad: PageResponse<Product>?
+
+        func savePageResponse(_ response: PageResponse<Product>) throws {
+            savePageResponseCallCount += 1
+            savedPageResponse = response
+        }
+
+        func loadPageResponse() throws -> PageResponse<Product>? {
+            loadPageResponseCallCount += 1
+            return pageResponseToLoad
+        }
+
+        func clear() throws {
+            clearCallCount += 1
         }
     }
 
@@ -599,7 +658,10 @@ final class ProductListViewModelTests: XCTestCase {
     }
 
     // 创建被测试的 ViewModel
-    private func makeViewModel(service: ProductServiceProtocol) -> ProductListViewModel {
-        return ProductListViewModel(service: service)
+    private func makeViewModel(
+        service: ProductServiceProtocol,
+        cacheStore: ProductCacheStoreProtocol = UserDefaultsProductCacheStore()
+    ) -> ProductListViewModel {
+        return ProductListViewModel(service: service, cacheStore: cacheStore)
     }
 }

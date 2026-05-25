@@ -13,13 +13,9 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
 
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
-        //拿到当前 App 场景对应的 UIWindowScene。拿不到就不继续。
+   
         guard let windowScene = (scene as? UIWindowScene) else { return }
-        
-        //创建窗口。iOS 13 以后，一个 Scene 对应一个 Window。
         let window = UIWindow(windowScene: windowScene)
-        
-        
         if isRunningUnitTests {
             print("当前是单元测试环境，不启动真实首页")
 
@@ -28,26 +24,10 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             self.window = window
             return
         }
-        
-        //创建你的列表页。
         let rootVC = HomeViewController()
-        
-        //创建导航控制器，并把列表页作为导航栈第一个页面。
         let nav = UINavigationController(rootViewController: rootVC)
-        
-        //让 window 显示导航控制器。
         window.rootViewController = nav
-        
-        //让 window 成为主窗口，并显示出来。
         window.makeKeyAndVisible()
-        
-        //SceneDelegate 持有这个 window，避免它被释放。
-        ///
-        ///把局部变量 window 保存到 SceneDelegate 的 window 属性里。
-        ///让 SceneDelegate 强引用这个 UIWindow。
-        ///只要 SceneDelegate 还在，window 就不会被释放。
-        ///
-        ///
         self.window = window
         
         

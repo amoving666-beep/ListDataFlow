@@ -9,11 +9,6 @@ import Foundation
 /// HomeViewModel
 ///
 /// 负责 Home 首页的多接口并发请求管理。
-///
-/// 注意：
-/// 这里的 productList 只是首页聚合接口的一部分，
-/// 用于学习“五接口并发请求”。
-/// 正式商品列表分页、缓存、refresh、loadMore 仍然由 ProductListViewModel 管理。
 final class HomeViewModel {
     
     // MARK: - Request Key
@@ -48,9 +43,6 @@ final class HomeViewModel {
     private var requestIDMap: [RequestKey: UUID] = [:]
     
     /// 首页聚合请求 ID。
-    ///
-    /// loadHomeData() 每次都会生成新的 batchRequestID。
-    /// group.notify 回来时，如果不是当前批次，就丢弃旧结果。
     private var batchRequestID = UUID()
     
     private(set) var loadState: HomeLoadState = .idle
@@ -58,9 +50,6 @@ final class HomeViewModel {
     // MARK: - Data
     
     /// 首页商品列表数据。
-    ///
-    /// 这里只用于首页聚合展示或调试，
-    /// 不参与 ProductListViewController 的分页主链路。
     private(set) var homeProducts: [Product] = []
     
     /// 用户信息。
@@ -100,13 +89,6 @@ final class HomeViewModel {
     // MARK: - Public Methods
     
     /// 加载首页五个接口。
-    ///
-    /// 当前用于学习：
-    /// 1. 多接口并发
-    /// 2. DispatchGroup 等待五个请求完成
-    /// 3. taskMap 独立管理 task
-    /// 4. requestIDMap 防旧回调污染
-    /// 5. 主接口 / 副接口失败策略分离
     func loadHomeData() {
         cancelAllRequests()
         
@@ -130,8 +112,8 @@ final class HomeViewModel {
                 service.fetchList(page: 1, pageSize: 10, completion: completion)
             },
             completion: { result in
+                defer { group.leave() }
                 productResult = result
-                group.leave()
             }
         )
         
@@ -140,8 +122,8 @@ final class HomeViewModel {
             key: .userInfo,
             request: service.fetchUserInfo,
             completion: { result in
+                defer { group.leave() }
                 userInfoResult = result
-                group.leave()
             }
         )
         
@@ -150,8 +132,8 @@ final class HomeViewModel {
             key: .banner,
             request: service.fetchBanners,
             completion: { result in
+                defer { group.leave() }
                 bannerResult = result
-                group.leave()
             }
         )
         
@@ -160,8 +142,8 @@ final class HomeViewModel {
             key: .recommendProducts,
             request: service.fetchRecommendProducts,
             completion: { result in
+                defer { group.leave() }
                 recommendResult = result
-                group.leave()
             }
         )
         
@@ -170,8 +152,8 @@ final class HomeViewModel {
             key: .unreadCount,
             request: service.fetchUnreadCount,
             completion: { result in
+                defer { group.leave() }
                 unreadResult = result
-                group.leave()
             }
         )
         
@@ -349,10 +331,14 @@ final class HomeViewModel {
         requestIDMap[key] = requestID
         
         let task = request { [weak self] result in
-            guard let self = self else { return }
+            guard let self = self else {
+                completion(.failure(.cancelled))
+                return
+            }
             
             guard requestID == self.requestIDMap[key] else {
                 print("Home 丢弃旧请求回调 key: \(key)")
+                completion(.failure(.cancelled))
                 return
             }
             

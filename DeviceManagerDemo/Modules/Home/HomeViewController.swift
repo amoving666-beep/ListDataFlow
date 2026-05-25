@@ -73,22 +73,15 @@ final class HomeViewController: UIViewController {
         tableView.refreshControl = refreshControl
         tableView.rowHeight = UITableView.automaticDimension
         tableView.estimatedRowHeight = 72
+        if #available(iOS 15.0, *) {
+            tableView.sectionHeaderTopPadding = 0
+        }
         return tableView
     }()
     
     private let refreshControl = UIRefreshControl()
     
-    private let headerContainerView = UIView()
-    private let projectTitleLabel = UILabel()
-    private let projectSubtitleLabel = UILabel()
-    private let unreadBadgeLabel = UILabel()
-    private let statusCardView = UIView()
-    private let statusTitleLabel = UILabel()
-    private let statusSubtitleLabel = UILabel()
-    private let bannerCardView = UIView()
-    private let bannerTitleLabel = UILabel()
-    private let bannerSubtitleLabel = UILabel()
-    private let recommendTitleLabel = UILabel()
+    private let homeHeaderView = HomeHeaderView()
     private var didSetupHeaderView = false
     
     private static let cellIdentifier = "HomeEntryCell"
@@ -132,136 +125,12 @@ final class HomeViewController: UIViewController {
     }
 
     private func setupHeaderView() {
-        headerContainerView.backgroundColor = .clear
-        headerContainerView.frame = CGRect(x: 0, y: 0, width: tableView.bounds.width, height: 285)
-        
-        projectTitleLabel.font = .systemFont(ofSize: 25, weight: .bold)
-        projectTitleLabel.textColor = .label
-        projectTitleLabel.text = "Swift 工程练习总控"
-        
-        projectSubtitleLabel.font = .systemFont(ofSize: 14, weight: .regular)
-        projectSubtitleLabel.textColor = .secondaryLabel
-        projectSubtitleLabel.numberOfLines = 2
-        projectSubtitleLabel.text = "UIKit · 网络层 · 分页缓存 · 并发请求 · 单元测试"
-        
-        unreadBadgeLabel.font = .systemFont(ofSize: 13, weight: .semibold)
-        unreadBadgeLabel.textColor = .white
-        unreadBadgeLabel.textAlignment = .center
-        unreadBadgeLabel.backgroundColor = .systemRed
-        unreadBadgeLabel.layer.cornerRadius = 14
-        unreadBadgeLabel.layer.masksToBounds = true
-        unreadBadgeLabel.text = "0"
-        unreadBadgeLabel.isHidden = true
-        
-        statusCardView.backgroundColor = .secondarySystemGroupedBackground
-        statusCardView.layer.cornerRadius = 16
-        statusCardView.layer.masksToBounds = true
-        
-        statusTitleLabel.font = .systemFont(ofSize: 16, weight: .semibold)
-        statusTitleLabel.textColor = .label
-        statusTitleLabel.text = "首页辅助接口加载中"
-        
-        statusSubtitleLabel.font = .systemFont(ofSize: 13, weight: .regular)
-        statusSubtitleLabel.textColor = .secondaryLabel
-        statusSubtitleLabel.numberOfLines = 2
-        statusSubtitleLabel.text = "userInfo / banner / recommend / unreadCount"
-        
-        bannerCardView.backgroundColor = .secondarySystemGroupedBackground
-        bannerCardView.layer.cornerRadius = 16
-        bannerCardView.layer.masksToBounds = true
-        
-        bannerTitleLabel.font = .systemFont(ofSize: 16, weight: .semibold)
-        bannerTitleLabel.textColor = .label
-        bannerTitleLabel.text = "Banner 加载中"
-        
-        bannerSubtitleLabel.font = .systemFont(ofSize: 13)
-        bannerSubtitleLabel.textColor = .secondaryLabel
-        bannerSubtitleLabel.text = "等待副接口返回"
-        bannerSubtitleLabel.numberOfLines = 2
-        
-        recommendTitleLabel.font = .systemFont(ofSize: 14, weight: .medium)
-        recommendTitleLabel.textColor = .secondaryLabel
-        recommendTitleLabel.text = "推荐商品加载中"
-        recommendTitleLabel.numberOfLines = 2
-        
-        [
-            projectTitleLabel,
-            projectSubtitleLabel,
-            unreadBadgeLabel,
-            statusCardView,
-            bannerCardView
-        ].forEach {
-            $0.translatesAutoresizingMaskIntoConstraints = false
-            headerContainerView.addSubview($0)
-        }
-        
-        [
-            statusTitleLabel,
-            statusSubtitleLabel
-        ].forEach {
-            $0.translatesAutoresizingMaskIntoConstraints = false
-            statusCardView.addSubview($0)
-        }
-        
-        [
-            bannerTitleLabel,
-            bannerSubtitleLabel,
-            recommendTitleLabel
-        ].forEach {
-            $0.translatesAutoresizingMaskIntoConstraints = false
-            bannerCardView.addSubview($0)
-        }
-        
-        NSLayoutConstraint.activate([
-            projectTitleLabel.topAnchor.constraint(equalTo: headerContainerView.topAnchor, constant: 18),
-            projectTitleLabel.leadingAnchor.constraint(equalTo: headerContainerView.leadingAnchor, constant: 20),
-            projectTitleLabel.trailingAnchor.constraint(lessThanOrEqualTo: unreadBadgeLabel.leadingAnchor, constant: -12),
-            
-            unreadBadgeLabel.centerYAnchor.constraint(equalTo: projectTitleLabel.centerYAnchor),
-            unreadBadgeLabel.trailingAnchor.constraint(equalTo: headerContainerView.trailingAnchor, constant: -20),
-            unreadBadgeLabel.widthAnchor.constraint(greaterThanOrEqualToConstant: 28),
-            unreadBadgeLabel.heightAnchor.constraint(equalToConstant: 28),
-            
-            projectSubtitleLabel.topAnchor.constraint(equalTo: projectTitleLabel.bottomAnchor, constant: 6),
-            projectSubtitleLabel.leadingAnchor.constraint(equalTo: projectTitleLabel.leadingAnchor),
-            projectSubtitleLabel.trailingAnchor.constraint(equalTo: headerContainerView.trailingAnchor, constant: -20),
-            
-            statusCardView.topAnchor.constraint(equalTo: projectSubtitleLabel.bottomAnchor, constant: 16),
-            statusCardView.leadingAnchor.constraint(equalTo: headerContainerView.leadingAnchor, constant: 20),
-            statusCardView.trailingAnchor.constraint(equalTo: headerContainerView.trailingAnchor, constant: -20),
-            statusCardView.heightAnchor.constraint(equalToConstant: 68),
-            
-            statusTitleLabel.topAnchor.constraint(equalTo: statusCardView.topAnchor, constant: 13),
-            statusTitleLabel.leadingAnchor.constraint(equalTo: statusCardView.leadingAnchor, constant: 16),
-            statusTitleLabel.trailingAnchor.constraint(equalTo: statusCardView.trailingAnchor, constant: -16),
-            
-            statusSubtitleLabel.topAnchor.constraint(equalTo: statusTitleLabel.bottomAnchor, constant: 5),
-            statusSubtitleLabel.leadingAnchor.constraint(equalTo: statusTitleLabel.leadingAnchor),
-            statusSubtitleLabel.trailingAnchor.constraint(equalTo: statusTitleLabel.trailingAnchor),
-            
-            bannerCardView.topAnchor.constraint(equalTo: statusCardView.bottomAnchor, constant: 12),
-            bannerCardView.leadingAnchor.constraint(equalTo: statusCardView.leadingAnchor),
-            bannerCardView.trailingAnchor.constraint(equalTo: statusCardView.trailingAnchor),
-            bannerCardView.heightAnchor.constraint(equalToConstant: 104),
-            
-            bannerTitleLabel.topAnchor.constraint(equalTo: bannerCardView.topAnchor, constant: 13),
-            bannerTitleLabel.leadingAnchor.constraint(equalTo: bannerCardView.leadingAnchor, constant: 16),
-            bannerTitleLabel.trailingAnchor.constraint(equalTo: bannerCardView.trailingAnchor, constant: -16),
-            
-            bannerSubtitleLabel.topAnchor.constraint(equalTo: bannerTitleLabel.bottomAnchor, constant: 5),
-            bannerSubtitleLabel.leadingAnchor.constraint(equalTo: bannerTitleLabel.leadingAnchor),
-            bannerSubtitleLabel.trailingAnchor.constraint(equalTo: bannerTitleLabel.trailingAnchor),
-            
-            recommendTitleLabel.topAnchor.constraint(equalTo: bannerSubtitleLabel.bottomAnchor, constant: 10),
-            recommendTitleLabel.leadingAnchor.constraint(equalTo: bannerTitleLabel.leadingAnchor),
-            recommendTitleLabel.trailingAnchor.constraint(equalTo: bannerTitleLabel.trailingAnchor)
-        ])
-        
-        tableView.tableHeaderView = headerContainerView
+        homeHeaderView.frame = CGRect(x: 0, y: 0, width: tableView.bounds.width, height: 285)
+        tableView.tableHeaderView = homeHeaderView
     }
 
     private func updateTableHeaderLayoutIfNeeded() {
-        guard tableView.tableHeaderView === headerContainerView else {
+        guard tableView.tableHeaderView === homeHeaderView else {
             return
         }
 
@@ -271,19 +140,19 @@ final class HomeViewController: UIViewController {
         }
 
         let targetSize = CGSize(width: targetWidth, height: UIView.layoutFittingCompressedSize.height)
-        let fittingSize = headerContainerView.systemLayoutSizeFitting(
+        let fittingSize = homeHeaderView.systemLayoutSizeFitting(
             targetSize,
             withHorizontalFittingPriority: .required,
             verticalFittingPriority: .fittingSizeLevel
         )
 
         let targetHeight = max(285, fittingSize.height)
-        guard headerContainerView.frame.width != targetWidth || headerContainerView.frame.height != targetHeight else {
+        guard homeHeaderView.frame.width != targetWidth || homeHeaderView.frame.height != targetHeight else {
             return
         }
 
-        headerContainerView.frame = CGRect(x: 0, y: 0, width: targetWidth, height: targetHeight)
-        tableView.tableHeaderView = headerContainerView
+        homeHeaderView.frame = CGRect(x: 0, y: 0, width: targetWidth, height: targetHeight)
+        tableView.tableHeaderView = homeHeaderView
     }
     
     private func bindHomeViewModel() {
@@ -299,25 +168,37 @@ final class HomeViewController: UIViewController {
 
             switch state {
             case .idle:
-                self.statusTitleLabel.text = "首页辅助接口待加载"
-                self.statusSubtitleLabel.text = "等待 userInfo / banner / recommend / unreadCount"
+                self.homeHeaderView.configureStatus(
+                    title: "首页辅助接口待加载",
+                    subtitle: "等待 userInfo / banner / recommend / unreadCount"
+                )
 
             case .loading:
-                self.statusTitleLabel.text = "首页辅助接口加载中"
-                self.statusSubtitleLabel.text = "正在并发请求 productList / userInfo / banner / recommend / unreadCount"
+                self.homeHeaderView.configureStatus(
+                    title: "首页辅助接口加载中",
+                    subtitle: "正在并发请求 productList / userInfo / banner / recommend / unreadCount"
+                )
 
             case .content:
-                self.statusTitleLabel.text = "接口状态：全部成功"
-                self.statusSubtitleLabel.text = "主接口成功，副接口也全部返回"
+                self.homeHeaderView.configureStatus(
+                    title: "接口状态：全部成功",
+                    subtitle: "主接口成功，副接口也全部返回"
+                )
 
             case .partialContent(let message):
-                self.statusTitleLabel.text = "接口状态：部分成功"
-                self.statusSubtitleLabel.text = message
+                self.homeHeaderView.configureStatus(
+                    title: "接口状态：部分成功",
+                    subtitle: message
+                )
 
             case .failed(let message):
-                self.statusTitleLabel.text = "接口状态：主接口失败"
-                self.statusSubtitleLabel.text = message
+                self.homeHeaderView.configureStatus(
+                    title: "接口状态：主接口失败",
+                    subtitle: message
+                )
             }
+
+            self.updateTableHeaderLayoutIfNeeded()
         }
     }
     
@@ -330,28 +211,13 @@ final class HomeViewController: UIViewController {
     }
     
     private func updateHeaderView() {
-        let userName = homeViewModel.userInfo?.name ?? "未获取用户"
-        let userLevel = homeViewModel.userInfo?.level ?? "未知等级"
-        
-        statusTitleLabel.text = "接口状态：辅助数据已返回"
-        statusSubtitleLabel.text = "用户：\(userName) · 等级：\(userLevel) · 未读：\(homeViewModel.unreadCount) · 商品：\(homeViewModel.homeProducts.count)"
-        
-        unreadBadgeLabel.text = "\(homeViewModel.unreadCount)"
-        unreadBadgeLabel.isHidden = homeViewModel.unreadCount <= 0
-        
-        if let firstBanner = homeViewModel.banners.first {
-            bannerTitleLabel.text = "Banner：\(firstBanner.title)"
-            bannerSubtitleLabel.text = firstBanner.linkUrl
-        } else {
-            bannerTitleLabel.text = "Banner：暂无数据"
-            bannerSubtitleLabel.text = "副接口失败或返回为空，主列表入口不受影响"
-        }
-        
-        if let firstRecommend = homeViewModel.recommendProducts.first {
-            recommendTitleLabel.text = "推荐商品：\(firstRecommend.title)"
-        } else {
-            recommendTitleLabel.text = "推荐商品：暂无数据"
-        }
+        homeHeaderView.configure(
+            userInfo: homeViewModel.userInfo,
+            unreadCount: homeViewModel.unreadCount,
+            banners: homeViewModel.banners,
+            recommendProducts: homeViewModel.recommendProducts,
+            productCount: homeViewModel.homeProducts.count
+        )
         updateTableHeaderLayoutIfNeeded()
     }
     
@@ -473,8 +339,18 @@ extension HomeViewController: UITableViewDataSource {
     }
 }
 
+
 extension HomeViewController: UITableViewDelegate {
-    
+
+    func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+        switch section {
+        case 0:
+            return 30
+        default:
+            return 38
+        }
+    }
+
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
         

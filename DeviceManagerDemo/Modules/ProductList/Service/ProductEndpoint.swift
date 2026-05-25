@@ -7,14 +7,10 @@
 import Foundation
 
 /// 商品模块的接口说明。
-/// 返回结构：
-/// ApiResponse<PageResponse<Product>>
+
 enum ProductEndpoint: Endpoint {
 
     /// Supabase anon public key。
-    ///
-    /// 你自己把下面占位符替换成真实 anon public key。
-    /// 注意：这是学习项目直连 Supabase 的写法。
     private static let supabaseAnonKey = LocalConfig.supabaseAnonKey
 
     /// 商品列表接口。
