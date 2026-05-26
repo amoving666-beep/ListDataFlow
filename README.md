@@ -1,4 +1,4 @@
-# DeviceManagerDemo
+# ListDataFlow
 
 一个基于 Swift + UIKit 的列表数据流工程样本，重点练习真实业务列表页中的网络层封装、分页刷新、请求生命周期、并发安全和 ViewModel 单元测试。
 
@@ -48,7 +48,7 @@
 ## 模块结构
 
 ```text
-DeviceManagerDemo
+ListDataFlow
 ├── Modules
 │   ├── Home
 │   │   ├── HomeViewController.swift
@@ -71,7 +71,7 @@ DeviceManagerDemo
 │       ├── View
 │       └── Helpers
 │
-└── DeviceManagerDemoTests
+└── ListDataFlowTests
 ```
 ---
 
