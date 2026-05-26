@@ -390,6 +390,117 @@ final class ProductListViewModelTests: XCTestCase {
     // MARK: - 6. Cache Store
     // 缓存协议注入：验证 ViewModel 依赖 ProductCacheStoreProtocol，而不是直接依赖 CacheHelper
 
+    // loadCache：页面启动时先从 cacheStore 读取缓存。
+    // 这个测试只验证缓存读取链路，不触发真实网络请求。
+
+    func testInitial_loadsCacheBeforeNetwork() {
+        let mockService = MockProductService()
+        let mockCacheStore = MockProductCacheStore()
+
+        mockCacheStore.pageResponseToLoad = makePageResponse([
+            makeProduct(id: 1, title: "缓存标题1", body: "缓存内容1")
+        ])
+
+        let viewModel = makeViewModel(service: mockService, cacheStore: mockCacheStore)
+        let outputSpy = bindOutputSpy(to: viewModel)
+
+        viewModel.loadCache()
+
+        XCTAssertEqual(mockCacheStore.loadPageResponseCallCount, 1)
+        XCTAssertEqual(viewModel.products.count, 1)
+        XCTAssertEqual(viewModel.products.first?.title, "缓存标题1")
+        XCTAssertEqual(outputSpy.productsChangedCallCount, 1)
+        XCTAssertTrue(outputSpy.didReceiveContentState)
+    }
+
+    // refresh 成功：应把第一页新数据保存到 cacheStore，旧缓存不应该继续保留。
+    func testRefreshSuccess_replacesCache() {
+        let mockService = MockProductService()
+        let mockCacheStore = MockProductCacheStore()
+        let viewModel = makeViewModel(service: mockService, cacheStore: mockCacheStore)
+
+        let oldProducts = [
+            makeProduct(id: 1, title: "旧标题1", body: "旧内容1"),
+            makeProduct(id: 2, title: "旧标题2", body: "旧内容2")
+        ]
+        mockService.result = .success(makePageResponse(oldProducts, page: 1, pageSize: 10, total: 20))
+        viewModel.loadData(mode: .initial)
+
+        let newProducts = [
+            makeProduct(id: 3, title: "新标题3", body: "新内容3"),
+            makeProduct(id: 4, title: "新标题4", body: "新内容4")
+        ]
+        mockService.result = .success(makePageResponse(newProducts, page: 1, pageSize: 10, total: 20))
+
+        // refresh 成功后，ViewModel 内部 products 已经被第一页新数据替换，
+        // saveCache 保存的也必须是替换后的完整列表。
+        viewModel.loadData(mode: .refresh)
+
+        XCTAssertEqual(mockCacheStore.savePageResponseCallCount, 2)
+        XCTAssertEqual(mockCacheStore.savedPageResponse?.list.map { $0.id }, [3, 4])
+        XCTAssertEqual(mockCacheStore.savedPageResponse?.page, 1)
+        XCTAssertEqual(mockCacheStore.savedPageResponse?.pageSize, 10)
+        XCTAssertEqual(mockCacheStore.savedPageResponse?.total, 20)
+    }
+
+    // loadMore 成功：缓存必须保存“第一页 + 第二页”的合并结果。
+    // 这是本阶段最关键的测试，防止误把 page 2 response 单独写进缓存。
+    func testLoadMoreSuccess_savesMergedProductsToCache() {
+        let mockService = MockProductService()
+        let mockCacheStore = MockProductCacheStore()
+        let viewModel = makeViewModel(service: mockService, cacheStore: mockCacheStore)
+
+        let page1Products = (1...10).map {
+            makeProduct(id: $0, title: "第一页标题\($0)", body: "第一页内容\($0)")
+        }
+        mockService.result = .success(makePageResponse(page1Products, page: 1, pageSize: 10, total: 12))
+        viewModel.loadData(mode: .initial)
+
+        let page2Products = [
+            makeProduct(id: 11, title: "第二页标题11", body: "第二页内容11"),
+            makeProduct(id: 12, title: "第二页标题12", body: "第二页内容12")
+        ]
+        mockService.result = .success(makePageResponse(page2Products, page: 2, pageSize: 10, total: 12))
+
+        // loadMore 返回的 response.list 只有第二页。
+        // ViewModel 必须先 append 到 products，再把合并后的完整 products 保存到 cacheStore。
+        viewModel.loadData(mode: .loadMore)
+
+        XCTAssertEqual(mockCacheStore.savePageResponseCallCount, 2)
+        XCTAssertEqual(mockCacheStore.savedPageResponse?.list.count, 12)
+        XCTAssertEqual(mockCacheStore.savedPageResponse?.list.first?.id, 1)
+        XCTAssertEqual(mockCacheStore.savedPageResponse?.list.last?.id, 12)
+        XCTAssertEqual(mockCacheStore.savedPageResponse?.list.map { $0.id }, Array(1...12))
+        XCTAssertEqual(mockCacheStore.savedPageResponse?.page, 2)
+        XCTAssertEqual(mockCacheStore.savedPageResponse?.pageSize, 10)
+        XCTAssertEqual(mockCacheStore.savedPageResponse?.total, 12)
+    }
+
+    // cacheStore 保存失败：不能影响网络成功后的列表展示。
+    // 缓存只是兜底能力，网络主流程成功时不能因为本地写入失败而进入 error。
+    func testCacheSaveFailure_doesNotBreakNetworkSuccess() {
+        let mockService = MockProductService()
+        let mockCacheStore = MockProductCacheStore()
+        mockCacheStore.shouldThrowOnSave = true
+
+        let viewModel = makeViewModel(service: mockService, cacheStore: mockCacheStore)
+        let outputSpy = bindOutputSpy(to: viewModel)
+
+        let products = [
+            makeProduct(id: 1, title: "标题1", body: "内容1"),
+            makeProduct(id: 2, title: "标题2", body: "内容2")
+        ]
+        mockService.result = .success(makePageResponse(products, page: 1, pageSize: 10, total: 2))
+
+        viewModel.loadData(mode: .initial)
+
+        XCTAssertEqual(mockCacheStore.savePageResponseCallCount, 1)
+        XCTAssertEqual(viewModel.products.count, 2)
+        XCTAssertEqual(outputSpy.productsChangedCallCount, 1)
+        XCTAssertTrue(outputSpy.didReceiveContentState)
+        XCTAssertFalse(outputSpy.didReceiveErrorState)
+    }
+    
     // 网络成功后：应通过 cacheStore 保存分页缓存
     func testInitialSuccess_savesPageResponseToCacheStore() {
         let mockService = MockProductService()
@@ -567,19 +678,36 @@ final class ProductListViewModelTests: XCTestCase {
         var clearCallCount = 0
         var savedPageResponse: PageResponse<Product>?
         var pageResponseToLoad: PageResponse<Product>?
+        var shouldThrowOnSave = false
+        var shouldThrowOnLoad = false
+        var shouldThrowOnClear = false
 
         func savePageResponse(_ response: PageResponse<Product>) throws {
             savePageResponseCallCount += 1
+
+            if shouldThrowOnSave {
+                throw NSError(domain: "MockProductCacheStore", code: 1)
+            }
+
             savedPageResponse = response
         }
 
         func loadPageResponse() throws -> PageResponse<Product>? {
             loadPageResponseCallCount += 1
+
+            if shouldThrowOnLoad {
+                throw NSError(domain: "MockProductCacheStore", code: 2)
+            }
+
             return pageResponseToLoad
         }
 
         func clear() throws {
             clearCallCount += 1
+
+            if shouldThrowOnClear {
+                throw NSError(domain: "MockProductCacheStore", code: 3)
+            }
         }
     }
 
