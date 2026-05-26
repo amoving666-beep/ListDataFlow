@@ -42,6 +42,10 @@
 		2B9426442FC1C48700758974 /* UserInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B9426432FC1C48700758974 /* UserInfo.swift */; };
 		2B9426462FC1C49A00758974 /* Banner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B9426452FC1C49A00758974 /* Banner.swift */; };
 		2B9426482FC1C4AC00758974 /* UnreadCount.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B9426472FC1C4AC00758974 /* UnreadCount.swift */; };
+		2BB9139B2FC5BC7300C44ECD /* ProductEntity+Mapping.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2BB9139A2FC5BC7300C44ECD /* ProductEntity+Mapping.swift */; };
+		2BB9139E2FC5BD3300C44ECD /* ProductEntityMappingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2BB9139D2FC5BD3300C44ECD /* ProductEntityMappingTests.swift */; };
+		2BB913A12FC5CF1100C44ECD /* CoreDataProductCacheStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2BB913A02FC5CF1100C44ECD /* CoreDataProductCacheStore.swift */; };
+		2BB913A32FC5D01300C44ECD /* CoreDataProductCacheStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2BB913A22FC5D01300C44ECD /* CoreDataProductCacheStoreTests.swift */; };
 		2BC976452FA102C3000D94EE /* NetworkError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2BC976442FA102C3000D94EE /* NetworkError.swift */; };
 		2BE2EE1C2FC49D900080337A /* DeviceManagerDemo.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 2BE2EE1A2FC49D900080337A /* DeviceManagerDemo.xcdatamodeld */; };
 		2BE2EE1F2FC49E050080337A /* CoreDataStack.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2BE2EE1E2FC49E050080337A /* CoreDataStack.swift */; };
@@ -103,6 +107,10 @@
 		2B9426432FC1C48700758974 /* UserInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserInfo.swift; sourceTree = "<group>"; };
 		2B9426452FC1C49A00758974 /* Banner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Banner.swift; sourceTree = "<group>"; };
 		2B9426472FC1C4AC00758974 /* UnreadCount.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UnreadCount.swift; sourceTree = "<group>"; };
+		2BB9139A2FC5BC7300C44ECD /* ProductEntity+Mapping.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ProductEntity+Mapping.swift"; sourceTree = "<group>"; };
+		2BB9139D2FC5BD3300C44ECD /* ProductEntityMappingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProductEntityMappingTests.swift; sourceTree = "<group>"; };
+		2BB913A02FC5CF1100C44ECD /* CoreDataProductCacheStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreDataProductCacheStore.swift; sourceTree = "<group>"; };
+		2BB913A22FC5D01300C44ECD /* CoreDataProductCacheStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreDataProductCacheStoreTests.swift; sourceTree = "<group>"; };
 		2BC976442FA102C3000D94EE /* NetworkError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkError.swift; sourceTree = "<group>"; };
 		2BD85EC52FB61D01001E4DF8 /* list-page.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "list-page.png"; sourceTree = "<group>"; };
 		2BD85EC62FB61D0B001E4DF8 /* detail-page.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "detail-page.png"; sourceTree = "<group>"; };
@@ -239,12 +247,9 @@
 		2B34230F2FC33B6200D119EC /* DeviceManagerDemoTests */ = {
 			isa = PBXGroup;
 			children = (
+				2BB9139C2FC5BD1900C44ECD /* Cache */,
+				2BB9139F2FC5BE1500C44ECD /* ProductList */,
 				2B34230C2FC33B6200D119EC /* DeviceManagerDemoTests.swift */,
-				2B34230D2FC33B6200D119EC /* MockProductService.swift */,
-				2B34230B2FC33B6200D119EC /* ControlledMockProductService.swift */,
-				2B34230E2FC33B6200D119EC /* ProductListViewModelTests.swift */,
-				2BE43EB52FC490C0007CAAE7 /* FileProductCacheStoreTests.swift */,
-				2BE2EE202FC49FA10080337A /* CoreDataStackTests.swift */,
 			);
 			path = DeviceManagerDemoTests;
 			sourceTree = "<group>";
@@ -286,6 +291,27 @@
 			path = DeviceManagerDemo;
 			sourceTree = "<group>";
 		};
+		2BB9139C2FC5BD1900C44ECD /* Cache */ = {
+			isa = PBXGroup;
+			children = (
+				2BE43EB52FC490C0007CAAE7 /* FileProductCacheStoreTests.swift */,
+				2BE2EE202FC49FA10080337A /* CoreDataStackTests.swift */,
+				2BB9139D2FC5BD3300C44ECD /* ProductEntityMappingTests.swift */,
+				2BB913A22FC5D01300C44ECD /* CoreDataProductCacheStoreTests.swift */,
+			);
+			path = Cache;
+			sourceTree = "<group>";
+		};
+		2BB9139F2FC5BE1500C44ECD /* ProductList */ = {
+			isa = PBXGroup;
+			children = (
+				2B34230E2FC33B6200D119EC /* ProductListViewModelTests.swift */,
+				2B34230D2FC33B6200D119EC /* MockProductService.swift */,
+				2B34230B2FC33B6200D119EC /* ControlledMockProductService.swift */,
+			);
+			path = ProductList;
+			sourceTree = "<group>";
+		};
 		2BD85EC42FB61C56001E4DF8 /* Screenshots */ = {
 			isa = PBXGroup;
 			children = (
@@ -300,6 +326,8 @@
 			isa = PBXGroup;
 			children = (
 				2BE2EE1E2FC49E050080337A /* CoreDataStack.swift */,
+				2BB9139A2FC5BC7300C44ECD /* ProductEntity+Mapping.swift */,
+				2BB913A02FC5CF1100C44ECD /* CoreDataProductCacheStore.swift */,
 			);
 			path = Storage;
 			sourceTree = "<group>";
@@ -420,10 +448,12 @@
 			files = (
 				2B3423102FC33B6200D119EC /* ControlledMockProductService.swift in Sources */,
 				2BE2EE212FC49FA10080337A /* CoreDataStackTests.swift in Sources */,
+				2BB9139E2FC5BD3300C44ECD /* ProductEntityMappingTests.swift in Sources */,
 				2BE43EB62FC490C0007CAAE7 /* FileProductCacheStoreTests.swift in Sources */,
 				2B3423112FC33B6200D119EC /* DeviceManagerDemoTests.swift in Sources */,
 				2B3423122FC33B6200D119EC /* MockProductService.swift in Sources */,
 				2B3423132FC33B6200D119EC /* ProductListViewModelTests.swift in Sources */,
+				2BB913A32FC5D01300C44ECD /* CoreDataProductCacheStoreTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -444,6 +474,7 @@
 				2B260D022F94F16E00F95950 /* ProductListViewController.swift in Sources */,
 				2B462D232F9111E200B19AFA /* DeviceCell.swift in Sources */,
 				2B1B6CB32FBCA79A005AA128 /* ProductEndpoint.swift in Sources */,
+				2BB913A12FC5CF1100C44ECD /* CoreDataProductCacheStore.swift in Sources */,
 				2B462D242F9111E200B19AFA /* DeviceDetailViewController.swift in Sources */,
 				2B1B6CB12FBCA789005AA128 /* Endpoint.swift in Sources */,
 				2B462D252F9111E200B19AFA /* DeviceListViewController.swift in Sources */,
@@ -458,6 +489,7 @@
 				2B7D654B2FA7416700C9D900 /* ProductListViewModel.swift in Sources */,
 				2BE43EB02FC47BF8007CAAE7 /* ProductCacheStoreProtocol.swift in Sources */,
 				2B0DAB952F9F88AE00C9BD5A /* ProductCell.swift in Sources */,
+				2BB9139B2FC5BC7300C44ECD /* ProductEntity+Mapping.swift in Sources */,
 				2B1B6CAB2FBCA75A005AA128 /* ApiResponse.swift in Sources */,
 				2B3423082FC32DA600D119EC /* DeviceViewModel.swift in Sources */,
 				2B1B6CAD2FBCA765005AA128 /* PageResponse.swift in Sources */,

@@ -57,7 +57,7 @@ final class ProductListViewModel {
     
     init(
         service: ProductServiceProtocol = ProductService(),
-        cacheStore: ProductCacheStoreProtocol = FileProductCacheStore()
+        cacheStore: ProductCacheStoreProtocol = CoreDataProductCacheStore()
     ) {
         self.service = service
         self.cacheStore = cacheStore
@@ -89,7 +89,8 @@ final class ProductListViewModel {
     func loadCache() {
         do {
             guard let cachedPage = try cacheStore.loadPageResponse() else {
-                onViewStateChanged?(.empty("暂无数据"))
+                // 没有缓存不是错误，也不应该提前把页面切成 empty。
+                // 页面首次进入时继续走 initial 网络请求即可。
                 onFooterStateChanged?(.hidden)
                 return
             }
@@ -103,8 +104,9 @@ final class ProductListViewModel {
             onViewStateChanged?(makeViewStateForCurrentList())
             onFooterStateChanged?(makeFooterStateForCurrentList())
         } catch {
+            // 缓存读取失败不能影响后续网络请求。
+            // 这里记录日志即可，页面状态交给 initial 网络请求决定。
             print("缓存读取失败：\(error.localizedDescription)")
-            onViewStateChanged?(.empty("暂无数据"))
             onFooterStateChanged?(.hidden)
         }
     }
@@ -119,7 +121,8 @@ final class ProductListViewModel {
         products.removeAll()
         currentPage = 1
         totalCount = 0
-        hasMoreData = false
+        // 清空后恢复成初始分页状态，下一次 initial 可以重新建立分页边界。
+        hasMoreData = true
 
         onProductsChanged?(products)
         onViewStateChanged?(.empty("暂无数据"))
