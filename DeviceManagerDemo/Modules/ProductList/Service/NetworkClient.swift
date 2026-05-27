@@ -119,13 +119,13 @@ final class NetworkClient {
                     options: [.prettyPrinted, .sortedKeys]
                    ),
                    let prettyJSONString = String(data: prettyData, encoding: .utf8) {
-                    print("""
-                    接口响应:
-                    method: \(request.httpMethod ?? "UNKNOWN")
-                    url: \(request.url?.absoluteString ?? "UNKNOWN")
-                    json:
-                    \(prettyJSONString)
-                    """)
+//                    print("""
+//                    接口响应:
+//                    method: \(request.httpMethod ?? "UNKNOWN")
+//                    url: \(request.url?.absoluteString ?? "UNKNOWN")
+//                    json:
+//                    \(prettyJSONString)
+//                    """)
                 }
                 
                 // 6. 注意：真实业务接口不是直接解 T，而是先解统一外壳 ApiResponse<T>。

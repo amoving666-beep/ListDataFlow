@@ -7,25 +7,9 @@
 
 import UIKit
 
-/// App 首页入口。
-///
-/// 这个页面负责展示当前工程 Demo 的主入口，
-/// 同时承载首页副接口并发请求结果：
-/// 1. 用户信息
-/// 2. Banner 信息
-/// 3. 推荐商品
-/// 4. 未读消息数
-///
-/// 注意：
-/// 商品列表分页主链路仍然由 ProductListViewController 管理，
-/// HomeVC 只消费首页辅助接口，不接管 ProductList 的 products 数据源。
 final class HomeViewController: UIViewController {
     
-    /// HomeVC 当前复用 ProductListViewModel 的首页辅助接口能力。
-    ///
-    /// 当前阶段先不新增 HomeViewModel，
-    /// 目的是集中学习 taskMap / requestIDMap 的多请求管理。
-    /// 后续如果首页逻辑继续增多，应单独拆出 HomeViewModel。
+    /// HomeVC 当前复用 ProductListViewModel 。
     private let homeViewModel = HomeViewModel()
     
     private enum DemoEntry: CaseIterable {
@@ -88,6 +72,7 @@ final class HomeViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        print("HomeViewController viewDidLoad")
         setupUI()
         bindHomeViewModel()
         loadHomeData()
@@ -236,8 +221,8 @@ final class HomeViewController: UIViewController {
             alert.addAction(UIAlertAction(title: "知道了", style: .destructive))
             present(alert, animated: true)
         case .deviceList:
-            let viewController = DeviceListViewController()
-            self.navigationController?.pushViewController(viewController, animated: true)
+//            let viewController = DeviceListViewController()
+//            self.navigationController?.pushViewController(viewController, animated: true)
             
         case .loginList:
             

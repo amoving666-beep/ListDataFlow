@@ -213,7 +213,7 @@ final class HomeViewModel {
         switch productResult {
         case .success(let pageData):
             homeProducts = pageData.list
-            print("Home productList 成功，数量: \(pageData.list.count)")
+//            print("Home productList 成功，数量: \(pageData.list.count)")
             
         case .failure(let error):
             print("Home productList 失败: \(error)")
@@ -243,7 +243,7 @@ final class HomeViewModel {
         switch userInfoResult {
         case .success(let userInfo):
             self.userInfo = userInfo
-            print("Home userInfo 成功: \(userInfo.name)")
+//            print("Home userInfo 成功: \(userInfo.name)")
             
         case .failure(let error):
             self.userInfo = nil
@@ -258,7 +258,7 @@ final class HomeViewModel {
         switch bannerResult {
         case .success(let banners):
             self.banners = banners
-            print("Home banner 成功，数量: \(banners.count)")
+//            print("Home banner 成功，数量: \(banners.count)")
             
         case .failure(let error):
             self.banners = []
@@ -273,7 +273,7 @@ final class HomeViewModel {
         switch recommendResult {
         case .success(let products):
             self.recommendProducts = products
-            print("Home recommendProducts 成功，数量: \(products.count)")
+//            print("Home recommendProducts 成功，数量: \(products.count)")
             
         case .failure(let error):
             self.recommendProducts = []
@@ -288,7 +288,7 @@ final class HomeViewModel {
         switch unreadResult {
         case .success(let unread):
             unreadCount = unread.count
-            print("Home unreadCount 成功: \(unread.count)")
+//            print("Home unreadCount 成功: \(unread.count)")
             
         case .failure(let error):
             unreadCount = 0

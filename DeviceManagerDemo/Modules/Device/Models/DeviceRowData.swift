@@ -12,4 +12,9 @@ struct DeviceRowData {
     var groupName: String
     var statusText: String
     var tagText: String
+    
+    var children: [DeviceRowData] = []
+    var isExpanded: Bool = false
+    var level: Int = 0
+    var isLastChild: Bool = false
 }

@@ -180,7 +180,7 @@ extension ProductListViewController {
             DispatchQueue.main.async {
                 guard let self = self else { return }
                 self.tableView.layoutIfNeeded()
-                self.tryAutoLoadMoreIfContentNotFull()
+//                self.tryAutoLoadMoreIfContentNotFull()
             }
         }
     }
@@ -318,9 +318,8 @@ extension ProductListViewController: UITableViewDelegate {
 // MARK: - UIScrollViewDelegate
 extension ProductListViewController {
     
-    /// 首屏数据不足一屏时，用户无法真正“上拉到底”。
-    /// 这种情况下如果服务端仍然表示有更多数据，就自动补一次 loadMore，
-    /// 避免被 contentHeight <= frameHeight 的保护逻辑提前 return 卡住。
+    /// 已废弃：自动补满一屏会和缓存、分页状态互相影响。
+    /// 当前只保留方法体用于临时调试，不再主动调用。
     private func tryAutoLoadMoreIfContentNotFull() {
         guard viewModel.canLoadMore else {
             return
@@ -346,25 +345,34 @@ extension ProductListViewController {
         guard viewModel.canLoadMore else {
             return
         }
-        
+
         let offsetY = scrollView.contentOffset.y
         let contentHeight = scrollView.contentSize.height
-        let frameHeight = scrollView.frame.size.height
-        
-        // 内容不足一屏时，没有真正的“上拉到底”滚动距离。
-        // 这种场景由 tryAutoLoadMoreIfContentNotFull() 在 reloadData 后补一次 loadMore。
-        if contentHeight <= frameHeight {
+
+        // frameHeight 不是用户真正可见的滚动区域高度。
+        // 导航栏、safeArea、refreshControl、contentInset 都可能影响实际可视范围。
+        // 上拉加载更多应该用 adjustedContentInset 修正后的 visibleHeight 来判断。
+        let visibleHeight = scrollView.bounds.height
+            - scrollView.adjustedContentInset.top
+            - scrollView.adjustedContentInset.bottom
+
+        guard visibleHeight > 0 else {
             return
         }
-        
-        let triggerY = contentHeight - frameHeight - 80
-        
-        if offsetY < triggerY {
+
+        // 内容确实没有超过可视区域时，用户没有真正的上拉加载空间。
+        guard contentHeight > visibleHeight else {
+            return
+        }
+
+        let distanceToBottom = contentHeight - (offsetY + visibleHeight)
+
+        if distanceToBottom > 80 {
             isLoadMoreTriggered = false
         }
-        
-        if scrollView.isDragging && offsetY > triggerY && !isLoadMoreTriggered {
-            print("触发上拉加载更多")
+
+        if scrollView.isDragging && distanceToBottom <= 80 && !isLoadMoreTriggered {
+            print("触发上拉加载更多，distanceToBottom: \(distanceToBottom)")
             isLoadMoreTriggered = true
             viewModel.loadData(mode: .loadMore)
         }

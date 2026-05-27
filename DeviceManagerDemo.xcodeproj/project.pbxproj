@@ -157,11 +157,10 @@
 		2B260CFB2F94F0FE00F95950 /* Device */ = {
 			isa = PBXGroup;
 			children = (
-				2B462D192F9111E200B19AFA /* DeviceRowData.swift */,
-				2B462D162F9111E200B19AFA /* DeviceCell.swift */,
-				2B462D182F9111E200B19AFA /* DeviceListViewController.swift */,
-				2B462D172F9111E200B19AFA /* DeviceDetailViewController.swift */,
-				2B3423072FC32DA600D119EC /* DeviceViewModel.swift */,
+				2B8A11912FC735FD0061EA02 /* Models */,
+				2B8A11922FC736120061EA02 /* Views */,
+				2B8A11932FC736240061EA02 /* Controllers */,
+				2B8A11942FC7362C0061EA02 /* Helpers */,
 			);
 			path = Device;
 			sourceTree = "<group>";
@@ -289,6 +288,39 @@
 				2BE2EE1A2FC49D900080337A /* DeviceManagerDemo.xcdatamodeld */,
 			);
 			path = DeviceManagerDemo;
+			sourceTree = "<group>";
+		};
+		2B8A11912FC735FD0061EA02 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				2B3423072FC32DA600D119EC /* DeviceViewModel.swift */,
+				2B462D192F9111E200B19AFA /* DeviceRowData.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		2B8A11922FC736120061EA02 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				2B462D162F9111E200B19AFA /* DeviceCell.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		2B8A11932FC736240061EA02 /* Controllers */ = {
+			isa = PBXGroup;
+			children = (
+				2B462D182F9111E200B19AFA /* DeviceListViewController.swift */,
+				2B462D172F9111E200B19AFA /* DeviceDetailViewController.swift */,
+			);
+			path = Controllers;
+			sourceTree = "<group>";
+		};
+		2B8A11942FC7362C0061EA02 /* Helpers */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Helpers;
 			sourceTree = "<group>";
 		};
 		2BB9139C2FC5BD1900C44ECD /* Cache */ = {

@@ -91,9 +91,8 @@ ListDataFlow
 ## 后续优化
 
 - Repository 层
-- NetworkClient 独立测试
+- 网络层测试依赖MockService，NetworkClient本身未覆盖
 - Cache 协议化
 - 图片缓存
-- diffable data source
-- SwiftLint / CI
+
 
